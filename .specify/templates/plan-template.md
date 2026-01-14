@@ -31,12 +31,12 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-1. **Spec-First Development**: Verify all requirements are documented in spec.md before proceeding
-2. **Claude Code-Driven Implementation**: Confirm implementation will use Claude Code agents exclusively (no manual coding)
-3. **Secure Full-Stack Architecture**: Ensure security considerations are addressed in design
-4. **REST API and JWT Authentication**: Verify authentication approach aligns with constitution requirements
-5. **Database Ownership and User Isolation**: Confirm user data isolation is planned in database design
-6. **Test-Driven Development**: Ensure testing approach follows TDD practices as required
+This plan must comply with the Hackathon II – The Evolution of Todo Constitution:
+- All code must be spec-driven with approved specifications before implementation
+- Architecture must support distributed, multi-user system requirements
+- Security and authentication must follow stateless JWT pattern
+- API governance must enforce user-isolated resource access
+- Repository structure must follow monorepo architecture with proper domain organization
 
 ## Project Structure
 

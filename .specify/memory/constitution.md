@@ -1,41 +1,206 @@
-<!--
-SYNC IMPACT REPORT:
-Version change: 1.0.0 → 1.1.0
-Modified principles: [PRINCIPLE_1_NAME] → Spec-First Development, [PRINCIPLE_2_NAME] → Claude Code-Driven Implementation, [PRINCIPLE_3_NAME] → Secure Full-Stack Architecture, [PRINCIPLE_4_NAME] → REST API and JWT Authentication, [PRINCIPLE_5_NAME] → Database Ownership and User Isolation
-Added sections: None
-Removed sections: None
-Templates requiring updates: .specify/templates/plan-template.md ⚠ pending, .specify/templates/spec-template.md ⚠ pending, .specify/templates/tasks-template.md ⚠ pending
+<!-- SYNC IMPACT REPORT:
+Version change: N/A (initial version) → 1.0.0
+Modified principles: N/A
+Added sections: All sections from user input
+Removed sections: N/A
+Templates requiring updates:
+  - .specify/templates/plan-template.md ✅ updated
+  - .specify/templates/spec-template.md ✅ updated
+  - .specify/templates/tasks-template.md ✅ updated
+  - .specify/templates/commands/*.md ⚠ pending review
+Runtime docs: ⚠ README.md pending review
 Follow-up TODOs: None
 -->
-# Hackathon Todo Application Constitution
 
-## Core Principles
+# Hackathon II – The Evolution of Todo Constitution
+## Project: Hackathon II – The Evolution of Todo
 
-### Spec-First Development
-No feature may be implemented without an approved spec in `/specs`. Specifications are the **single source of truth**. Any ambiguity must be resolved through spec updates before implementation begins. All implementation work must directly reference spec requirements.
+---
 
-### Claude Code-Driven Implementation
-All code must be generated using Claude Code agents; no manual coding is permitted. Implementation follows agentic workflows exclusively. All changes must be traceable through Claude Code sessions and documented in Prompt History Records (PHRs).
+## 1. Purpose of This Constitution
 
-### Secure Full-Stack Architecture
-The application must follow secure-by-design principles with proper separation of concerns between frontend and backend. All data transmission must be encrypted, and security best practices must be implemented at every layer. Input validation and output encoding are mandatory.
+This constitution defines the **binding laws, constraints, and governance rules**
+for the "Evolution of Todo" project developed as part of **Hackathon II: Mastering
+Spec-Driven Development & Cloud-Native AI**.
 
-### REST API and JWT-Based Authentication
-The backend must expose a RESTful API with JWT-based authentication for all protected endpoints. Authentication tokens must be properly secured and follow industry best practices for token management, refresh mechanisms, and secure storage.
+This document governs **all design, specification, planning, and implementation
+activities** performed by AI agents (Claude Code) and humans (acting as system
+architects).
 
-### Database Ownership and User Isolation
-The application must implement proper user data isolation where each user can only access their own data. Database queries must include appropriate user context to prevent unauthorized data access. User permissions must be enforced at the application level.
+Any output that violates this constitution is considered **invalid** and must be
+discarded and regenerated.
 
-### Test-Driven Development (NON-NEGOTIABLE)
-All features must follow TDD practices: Tests written → Requirements validated → Tests fail → Implementation → Tests pass. Both unit and integration tests are required for all functionality. Test coverage must meet minimum thresholds before acceptance.
+---
 
-## Additional Constraints
-The application must support a full-stack architecture with React frontend and Node.js/Express backend. Database integration must support user isolation for todo items. The application must follow modern web security practices and be deployable as a complete solution.
+## 2. Core Philosophy
 
-## Development Workflow
-All development must follow Spec-Driven Development methodology using the Spec-Kit Plus framework. Each feature requires specification (spec.md), implementation plan (plan.md), and executable tasks (tasks.md). All code changes must be made through Claude Code agents with proper documentation in PHRs.
+This project follows **AI-Native, Spec-Driven Development** principles.
 
-## Governance
-This constitution supersedes all other development practices for the Hackathon Todo Application. Amendments require explicit documentation and approval. All pull requests and code reviews must verify compliance with these principles. The constitution must be referenced in all development decisions.
+### Fundamental Beliefs
+- The role of the engineer is **System Architect**, not syntax writer
+- Specifications are the **single source of truth**
+- AI agents generate code, humans govern intent
+- Architecture must evolve safely across phases
+- Intelligence must be reusable, auditable, and cloud-ready
 
-**Version**: 1.1.0 | **Ratified**: 2026-01-07 | **Last Amended**: 2026-01-07
+---
+
+## 3. Spec-Driven Development Laws
+
+1. **Spec-First Law**
+   - No code may be generated without an approved specification
+   - Every feature must have a written spec before implementation
+
+2. **Spec Supremacy Law**
+   - Specs override all generated code
+   - If code and spec conflict, the spec must be updated or code regenerated
+
+3. **Traceability Law**
+   - Every implementation must reference the exact spec files used
+   - Spec references must use Spec-Kit notation (e.g. `@specs/features/task-crud.md`)
+
+---
+
+## 4. Agentic Development Workflow (Mandatory)
+
+All development MUST follow this exact order:
+
+1. Write or update specification
+2. Generate implementation plan
+3. Break plan into tasks
+4. Implement using Claude Code
+5. Review against specs and constitution
+6. Iterate by refining specs (never by manual code edits)
+
+Skipping or reordering steps is forbidden.
+
+---
+
+## 5. Human vs AI Responsibilities
+
+### Human (System Architect)
+- Defines intent, constraints, and architecture
+- Writes and refines specifications
+- Reviews outputs for compliance
+
+### AI Agent (Claude Code)
+- Reads constitution and specs
+- Generates plans, tasks, and code
+- Self-audits against this constitution
+
+Humans **must not** write production code manually.
+
+---
+
+## 6. Coding Constraints (Strict)
+
+- Manual code writing is **strictly forbidden**
+- Manual bug fixes are forbidden
+- Direct code edits without spec changes are forbidden
+- All changes must originate from specs and be executed by Claude Code
+
+Violations invalidate the phase submission.
+
+---
+
+## 7. Phase Discipline & Evolution Rules
+
+The project evolves across five phases:
+
+1. Phase I – In-Memory Console App (Completed)
+2. Phase II – Full-Stack Web Application (Current)
+3. Phase III – AI-Powered Chatbot
+4. Phase IV – Local Kubernetes Deployment
+5. Phase V – Advanced Cloud Deployment
+
+### Phase Laws
+- Each phase must build on previous phases
+- No breaking architectural decisions without spec updates
+- Phase II must remain compatible with Phases III–V
+- Early shortcuts that block future phases are forbidden
+
+---
+
+## 8. Phase II Architectural Constraints
+
+Phase II introduces a **distributed, multi-user system**.
+
+Mandatory constraints:
+- Stateless backend architecture
+- Externalized persistent storage
+- User-isolated data access
+- Cloud-ready configuration (env-based)
+
+---
+
+## 9. Security & Authentication Laws
+
+1. Authentication must be **stateless**
+2. JWT is the only allowed authentication bridge
+3. Backend must never trust frontend state
+4. Every request must be authenticated
+5. User identity must be derived from JWT, not request parameters
+6. Database queries must always be scoped to authenticated user
+7. Shared secrets must be loaded via environment variables only
+
+Any violation is a critical failure.
+
+---
+
+## 10. API Governance Rules
+
+- All APIs must be RESTful
+- All endpoints must require authentication
+- Unauthorized requests must return HTTP 401
+- Users may only access their own resources
+- Task ownership must be enforced at every operation
+
+---
+
+## 11. Repository Structure Law
+
+The project must follow a **monorepo architecture**.
+
+Mandatory structure:
+- `/specs` for all specifications
+- `/frontend` for Next.js application
+- `/backend` for FastAPI application
+- Multiple `CLAUDE.md` files allowed for layered guidance
+
+Specs must be organized by domain:
+- features
+- api
+- database
+- ui
+
+---
+
+## 12. Review & Compliance Enforcement
+
+- Claude Code must self-audit outputs against this constitution
+- Non-compliant outputs must be rejected and regenerated
+- Judges may inspect specs, prompts, and iteration history
+- Compliance is evaluated on **process**, not just final output
+
+---
+
+## 13. Success Criteria
+
+A phase is considered successful only if:
+- All features are spec-driven
+- No manual code was written
+- Security constraints are enforced
+- Architecture supports future phases
+- Outputs comply fully with this constitution
+
+---
+
+## 14. Final Authority
+
+This constitution is the **highest authority** in this repository.
+
+No spec, plan, or implementation may override it.
+
+End of Constitution
+
+**Version**: 1.0.0 | **Ratified**: 2026-01-12 | **Last Amended**: 2026-01-12

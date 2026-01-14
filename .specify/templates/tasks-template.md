@@ -63,13 +63,12 @@ description: "Task list template for feature implementation"
 Examples of foundational tasks (adjust based on your project):
 
 - [ ] T004 Setup database schema and migrations framework
-- [ ] T005 [P] Implement JWT-based authentication/authorization framework
-- [ ] T006 [P] Setup API routing and middleware structure with security
-- [ ] T007 Create base models/entities that all stories depend on with user isolation
+- [ ] T005 [P] Implement stateless JWT authentication/authorization framework (per constitution requirement)
+- [ ] T006 [P] Setup API routing with authentication middleware structure
+- [ ] T007 Create base models/entities that all stories depend on
 - [ ] T008 Configure error handling and logging infrastructure
 - [ ] T009 Setup environment configuration management
-- [ ] T010 [P] Establish Claude Code-driven development workflow (no manual coding)
-- [ ] T011 [P] Set up test-driven development infrastructure
+- [ ] T010 Implement user-isolated data access controls (per constitution requirement)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
