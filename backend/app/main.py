@@ -30,6 +30,10 @@ async def add_error_handler(request, call_next):
     return response
 
 # Add CORS middleware
+
+origins = [
+    "https://frontend-five-ecru-11.vercel.app",
+]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
