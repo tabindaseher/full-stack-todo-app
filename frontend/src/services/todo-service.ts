@@ -36,7 +36,7 @@ export const getTodos = async (params?: GetTodosParams): Promise<GetTodosRespons
 
     if (Array.isArray(response.data)) {
       // Direct array response from backend - need to map fields from snake_case to camelCase
-      todos = response.data.map(task => ({
+      todos = response.data.map((task: any) => ({
         id: String(task.id),
         title: task.title || '',
         description: task.description,
@@ -51,7 +51,7 @@ export const getTodos = async (params?: GetTodosParams): Promise<GetTodosRespons
     } else if (response.data && typeof response.data === 'object') {
       // Object response with todos property
       const responseTodos = response.data.todos || [];
-      todos = responseTodos.map(task => ({
+      todos = responseTodos.map((task: any) => ({
         id: String(task.id),
         title: task.title || '',
         description: task.description,

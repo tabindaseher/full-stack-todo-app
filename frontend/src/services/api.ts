@@ -95,10 +95,10 @@ export const todosApi = {
   getById: (id: string) =>
     apiClient.get(`/api/todos/${id}`),
 
-  create: (data: { title: string; description?: string; dueDate?: string; priority?: string }) =>
+  create: (data: { title: string; description?: string; dueDate?: string | null; priority?: string }) =>
     apiClient.post('/api/todos', data),
 
-  update: (id: string, data: { title?: string; description?: string; completed?: boolean; dueDate?: string; priority?: string }) =>
+  update: (id: string, data: { title?: string; description?: string; completed?: boolean; dueDate?: string | null; priority?: string }) =>
     apiClient.put(`/api/todos/${id}`, data),
 
   delete: (id: string) =>
