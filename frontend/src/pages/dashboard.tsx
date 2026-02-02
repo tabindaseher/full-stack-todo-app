@@ -34,6 +34,8 @@ const DashboardPage: React.FC = () => {
       }));
 
       setTodos(normalizedTodos);
+      // Explicitly clear error after successful load to ensure UI state is correct
+      setError(null);
     } catch (err) {
       console.error('Error loading todos:', err);
       setError('Failed to load todos. Please try again later.');
