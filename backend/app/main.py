@@ -4,6 +4,10 @@ from app.core.config import settings
 from app.api.v1.api import api_router
 from app.middleware.errors import error_handler_middleware
 from app.middleware.logging import logging_middleware
+from app.database.session import engine
+from app.models.user import User
+from app.models.task import Task
+from sqlmodel import SQLModel
 import logging
 
 # Configure logging
@@ -46,6 +50,18 @@ app.add_middleware(
 
 # Include API routes
 app.include_router(api_router, prefix="/api")
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database tables on startup"""
+    try:
+        # Create all tables defined in the models
+        SQLModel.metadata.create_all(bind=engine)
+        logger.info("Database tables created successfully")
+    except Exception as e:
+        logger.error(f"Error creating database tables: {str(e)}")
+        raise
+
 
 @app.get("/")
 async def root():

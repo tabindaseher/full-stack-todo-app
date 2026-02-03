@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import Input from '../ui/input';
 import Button from '../ui/button';
+import EyeIcon from '../ui/eye-icon';
 
 interface RegisterFormInputs {
   name: string;
@@ -97,8 +98,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit, loading, error })
             type="button"
             className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
             onClick={() => setShowPassword(!showPassword)}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
-            {showPassword ? 'Hide' : 'Show'}
+            <EyeIcon isVisible={showPassword} className="w-5 h-5 text-gray-500 hover:text-gray-700" />
           </button>
         </div>
 
@@ -119,8 +121,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit, loading, error })
             type="button"
             className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
           >
-            {showConfirmPassword ? 'Hide' : 'Show'}
+            <EyeIcon isVisible={showConfirmPassword} className="w-5 h-5 text-gray-500 hover:text-gray-700" />
           </button>
         </div>
       </div>

@@ -3,7 +3,7 @@ import { getToken, getRefreshToken, removeTokens } from '../utils/auth';
 
 // Create axios instance with base configuration
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000',
+  baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api`,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -75,35 +75,35 @@ export default apiClient;
 // Export specific API functions for authentication
 export const authApi = {
   login: (email: string, password: string) =>
-    apiClient.post('/api/auth/login', { email, password }),
+    apiClient.post('/auth/login', { email, password }),
 
   register: (name: string, email: string, password: string) =>
-    apiClient.post('/api/auth/register', { name, email, password }),
+    apiClient.post('/auth/register', { name, email, password }),
 
   logout: () =>
-    apiClient.post('/api/auth/logout'),
+    apiClient.post('/auth/logout'),
 
   refreshToken: (refreshToken: string) =>
-    apiClient.post('/api/auth/refresh', { refreshToken }),
+    apiClient.post('/auth/refresh', { refreshToken }),
 };
 
 // Export specific API functions for todos
 export const todosApi = {
   getAll: (params?: { status?: string; priority?: string; limit?: number; offset?: number }) =>
-    apiClient.get('/api/todos', { params }),
+    apiClient.get('/todos', { params }),
 
   getById: (id: string) =>
-    apiClient.get(`/api/todos/${id}`),
+    apiClient.get(`/todos/${id}`),
 
   create: (data: { title: string; description?: string; dueDate?: string | null; priority?: string }) =>
-    apiClient.post('/api/todos', data),
+    apiClient.post('/todos', data),
 
   update: (id: string, data: { title?: string; description?: string; completed?: boolean; dueDate?: string | null; priority?: string }) =>
-    apiClient.put(`/api/todos/${id}`, data),
+    apiClient.put(`/todos/${id}`, data),
 
   delete: (id: string) =>
-    apiClient.delete(`/api/todos/${id}`),
+    apiClient.delete(`/todos/${id}`),
 
   toggleComplete: (id: string, completed: boolean) =>
-    apiClient.patch(`/api/todos/${id}/complete`, { completed }),
+    apiClient.patch(`/todos/${id}/complete`, { completed }),
 };
