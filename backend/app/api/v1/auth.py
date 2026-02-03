@@ -6,6 +6,7 @@ from datetime import timedelta
 from typing import Dict
 import logging
 import uuid
+import traceback
 from pydantic import BaseModel
 from app.models.user import User, UserCreate, UserLogin, verify_password
 from sqlmodel import select
@@ -38,17 +39,29 @@ async def login_user(login_data: LoginRequest, session: Session = Depends(get_se
         email = login_data.email
         password = login_data.password
 
+        logger.info(f"Attempting to login user: {email}")
+
         # Query the database for the user
         statement = select(User).where(User.email == email)
         result = session.exec(statement)
         user = result.first()
 
-        # Check if user exists and password is correct
-        if not user or not verify_password(password, user.hashed_password):
+        if not user:
+            logger.warning(f"Login failed: User with email {email} not found")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid email or password"
             )
+
+        # Check if password is correct
+        if not verify_password(password, user.hashed_password):
+            logger.warning(f"Login failed: Invalid password for user {email}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid email or password"
+            )
+
+        logger.info(f"Login successful for user: {email}")
 
         # Prepare user data to return
         user_data = {
@@ -83,12 +96,14 @@ async def login_user(login_data: LoginRequest, session: Session = Depends(get_se
         }
     except HTTPException:
         # Re-raise HTTP exceptions as-is
+        logger.error(f"HTTP Exception during login: {traceback.format_exc()}")
         raise
     except Exception as e:
-        logger.error(f"Error during login: {str(e)}")
+        logger.error(f"Unexpected error during login: {str(e)}")
+        logger.error(f"Full traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Login failed"
+            detail=f"Login failed: {str(e)}"
         )
 
 
@@ -102,9 +117,12 @@ async def register_user(register_data: RegisterRequest, session: Session = Depen
         email = register_data.email
         password = register_data.password
 
+        logger.info(f"Attempting to register user: {email}")
+
         # Check if user already exists
         existing_user = session.exec(select(User).where(User.email == email)).first()
         if existing_user:
+            logger.warning(f"Registration failed: User with email {email} already exists")
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="User with this email already exists"
@@ -113,9 +131,11 @@ async def register_user(register_data: RegisterRequest, session: Session = Depen
         # Create new user with hashed password
         from app.models.user import pwd_context
         hashed_password = pwd_context.hash(password)
+        logger.info(f"Password hashed successfully for user: {email}")
 
         # Generate a unique user ID (simple approach)
         user_id = f"user_{uuid.uuid4().hex}"
+        logger.info(f"Generated user ID: {user_id}")
 
         db_user = User(
             id=user_id,
@@ -127,6 +147,7 @@ async def register_user(register_data: RegisterRequest, session: Session = Depen
         session.add(db_user)
         session.commit()
         session.refresh(db_user)
+        logger.info(f"User added to database: {email}")
 
         # Prepare user data to return
         user_data = {
@@ -152,6 +173,8 @@ async def register_user(register_data: RegisterRequest, session: Session = Depen
             expires_delta=timedelta(days=7)
         )
 
+        logger.info(f"Registration successful for user: {email}")
+
         return {
             "user": user_data,
             "token": access_token,
@@ -159,12 +182,14 @@ async def register_user(register_data: RegisterRequest, session: Session = Depen
         }
     except HTTPException:
         # Re-raise HTTP exceptions as-is
+        logger.error(f"HTTP Exception during registration: {traceback.format_exc()}")
         raise
     except Exception as e:
-        logger.error(f"Error during registration: {str(e)}")
+        logger.error(f"Unexpected error during registration: {str(e)}")
+        logger.error(f"Full traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Registration failed"
+            detail=f"Registration failed: {str(e)}"
         )
 
 

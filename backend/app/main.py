@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
@@ -72,7 +73,56 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check endpoint to verify API availability"""
-    return {"status": "healthy", "timestamp": "2023-10-27T10:00:00Z"}
+    try:
+        # Test database connection by attempting to query
+        from sqlmodel import select
+        from app.models.user import User
+        from app.database.session import get_session
+
+        # Create a session and try to count users
+        with next(get_session()) as session:
+            user_count = session.exec(select(User)).all()
+
+        return {
+            "status": "healthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "database_connected": True,
+            "user_count": len(user_count)
+        }
+    except Exception as e:
+        logger.error(f"Health check failed: {str(e)}")
+        return {
+            "status": "unhealthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "database_connected": False,
+            "error": str(e)
+        }
+
+
+@app.get("/debug/db-test")
+async def db_test():
+    """Debug endpoint to test database connectivity"""
+    try:
+        from sqlmodel import select
+        from app.models.user import User
+        from app.database.session import get_session
+
+        with next(get_session()) as session:
+            user_count = session.exec(select(User)).all()
+
+        return {
+            "database_accessible": True,
+            "user_table_exists": True,
+            "user_count": len(user_count),
+            "message": "Database connection successful"
+        }
+    except Exception as e:
+        logger.error(f"Database test failed: {str(e)}")
+        return {
+            "database_accessible": False,
+            "error": str(e),
+            "message": "Database connection failed"
+        }
 
 if __name__ == "__main__":
     import uvicorn
