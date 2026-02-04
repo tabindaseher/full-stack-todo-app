@@ -34,52 +34,54 @@ async def add_error_handler(request, call_next):
     response = await error_handler_middleware(request, call_next)
     return response
 
-# Add CORS middleware
-
+# --------------------
+# CORS Middleware
+# --------------------
 origins = [
-    "https://frontend-five-ecru-11.vercel.app",
+    "http://localhost:3000",  # local frontend
+    "https://frontend-five-ecru-11.vercel.app"  # deployed frontend
 ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    # Expose headers for authorization
     expose_headers=["Access-Control-Allow-Origin", "Authorization"]
 )
 
-# Include API routes
+# --------------------
+# API Routes
+# --------------------
 app.include_router(api_router, prefix="/api")
 
+# --------------------
+# Startup Event
+# --------------------
 @app.on_event("startup")
 async def startup_event():
     """Initialize database tables on startup"""
     try:
-        # Create all tables defined in the models
         SQLModel.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")
     except Exception as e:
         logger.error(f"Error creating database tables: {str(e)}")
         raise
 
-
+# --------------------
+# Root & Health Endpoints
+# --------------------
 @app.get("/")
 async def root():
-    """Root endpoint to verify backend is running"""
     return {"message": "Backend is running!"}
-
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint to verify API availability"""
     try:
-        # Test database connection by attempting to query
         from sqlmodel import select
-        from app.models.user import User
         from app.database.session import get_session
 
-        # Create a session and try to count users
         with next(get_session()) as session:
             user_count = session.exec(select(User)).all()
 
@@ -98,13 +100,13 @@ async def health_check():
             "error": str(e)
         }
 
-
+# --------------------
+# Debug / Database Test
+# --------------------
 @app.get("/debug/db-test")
 async def db_test():
-    """Debug endpoint to test database connectivity"""
     try:
         from sqlmodel import select
-        from app.models.user import User
         from app.database.session import get_session
 
         with next(get_session()) as session:
@@ -124,6 +126,9 @@ async def db_test():
             "message": "Database connection failed"
         }
 
+# --------------------
+# Run with Uvicorn
+# --------------------
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
