@@ -41,6 +41,14 @@ async def login_user(login_data: LoginRequest, session: Session = Depends(get_se
 
         logger.info(f"Attempting to login user: {email}")
 
+        # Validate password length (bcrypt supports max 72 bytes)
+        if len(password.encode('utf-8')) > 72:
+            logger.warning(f"Login failed: Password too long for user {email}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Password cannot be longer than 72 characters"
+            )
+
         # Query the database for the user
         statement = select(User).where(User.email == email)
         result = session.exec(statement)
@@ -118,6 +126,14 @@ async def register_user(register_data: RegisterRequest, session: Session = Depen
         password = register_data.password
 
         logger.info(f"Attempting to register user: {email}")
+
+        # Validate password length (bcrypt supports max 72 bytes)
+        if len(password.encode('utf-8')) > 72:
+            logger.warning(f"Registration failed: Password too long for user {email}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Password cannot be longer than 72 characters"
+            )
 
         # Check if user already exists
         existing_user = session.exec(select(User).where(User.email == email)).first()
