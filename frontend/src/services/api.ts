@@ -44,9 +44,9 @@ apiClient.interceptors.response.use(
           });
 
           if (response.data.token) {
-            // Store the new tokens
+            // Store the new tokens (use the existing refresh token since backend doesn't return a new one)
             import('../utils/auth').then(({ storeTokens }) => {
-              storeTokens(response.data.token, response.data.refreshToken || getRefreshToken());
+              storeTokens(response.data.token, refreshToken);
             });
 
             // Retry the original request with the new token
@@ -96,10 +96,16 @@ export const todosApi = {
     apiClient.get(`/todos/${id}`),
 
   create: (data: { title: string; description?: string; dueDate?: string | null; priority?: string }) =>
-    apiClient.post('/todos', data),
+    apiClient.post('/todos', {
+      ...data,
+      priority: data.priority || 'medium'  // Ensure priority defaults to 'medium' if not provided
+    }),
 
   update: (id: string, data: { title?: string; description?: string; completed?: boolean; dueDate?: string | null; priority?: string }) =>
-    apiClient.put(`/todos/${id}`, data),
+    apiClient.put(`/todos/${id}`, {
+      ...data,
+      priority: data.priority || undefined  // Only send priority if it's provided
+    }),
 
   delete: (id: string) =>
     apiClient.delete(`/todos/${id}`),

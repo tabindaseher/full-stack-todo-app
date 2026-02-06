@@ -102,77 +102,89 @@ class TaskService:
         """
         Update a specific task for a specific user
         """
-        statement = select(Task).where(Task.id == task_id).where(Task.user_id == user_id)
-        db_task = session.exec(statement).first()
+        try:
+            statement = select(Task).where(Task.id == task_id).where(Task.user_id == user_id)
+            db_task = session.exec(statement).first()
 
-        if not db_task:
-            return None
+            if not db_task:
+                return None
 
-        # Update the task fields
-        update_data = task_update.dict(exclude_unset=True)
-        for field, value in update_data.items():
-            if hasattr(db_task, field):
-                setattr(db_task, field, value)
+            # Update the task fields
+            update_data = task_update.dict(exclude_unset=True)
+            for field, value in update_data.items():
+                if hasattr(db_task, field):
+                    setattr(db_task, field, value)
 
-        db_task.updated_at = datetime.utcnow()
-        session.add(db_task)
-        session.commit()
-        session.refresh(db_task)
+            db_task.updated_at = datetime.utcnow()
+            session.add(db_task)
+            session.commit()
+            session.refresh(db_task)
 
-        return TaskResponse(
-            id=db_task.id,
-            title=db_task.title,
-            description=db_task.description,
-            completed=db_task.completed,
-            user_id=db_task.user_id,
-            due_date=db_task.due_date,
-            priority=db_task.priority,
-            created_at=db_task.created_at,
-            updated_at=db_task.updated_at
-        )
+            return TaskResponse(
+                id=db_task.id,
+                title=db_task.title,
+                description=db_task.description,
+                completed=db_task.completed,
+                user_id=db_task.user_id,
+                due_date=db_task.due_date,
+                priority=db_task.priority,
+                created_at=db_task.created_at,
+                updated_at=db_task.updated_at
+            )
+        except Exception as e:
+            session.rollback()
+            raise e
 
     @staticmethod
     def delete_task(*, session: Session, task_id: int, user_id: str) -> bool:
         """
         Delete a specific task for a specific user
         """
-        statement = select(Task).where(Task.id == task_id).where(Task.user_id == user_id)
-        db_task = session.exec(statement).first()
+        try:
+            statement = select(Task).where(Task.id == task_id).where(Task.user_id == user_id)
+            db_task = session.exec(statement).first()
 
-        if not db_task:
-            return False
+            if not db_task:
+                return False
 
-        session.delete(db_task)
-        session.commit()
-        return True
+            session.delete(db_task)
+            session.commit()
+            return True
+        except Exception as e:
+            session.rollback()
+            raise e
 
     @staticmethod
     def toggle_task_completion(*, session: Session, task_id: int, user_id: str) -> Optional[TaskResponse]:
         """
         Toggle the completion status of a specific task for a specific user
         """
-        statement = select(Task).where(Task.id == task_id).where(Task.user_id == user_id)
-        db_task = session.exec(statement).first()
+        try:
+            statement = select(Task).where(Task.id == task_id).where(Task.user_id == user_id)
+            db_task = session.exec(statement).first()
 
-        if not db_task:
-            return None
+            if not db_task:
+                return None
 
-        # Toggle the completion status
-        db_task.completed = not db_task.completed
-        db_task.updated_at = datetime.utcnow()
+            # Toggle the completion status
+            db_task.completed = not db_task.completed
+            db_task.updated_at = datetime.utcnow()
 
-        session.add(db_task)
-        session.commit()
-        session.refresh(db_task)
+            session.add(db_task)
+            session.commit()
+            session.refresh(db_task)
 
-        return TaskResponse(
-            id=db_task.id,
-            title=db_task.title,
-            description=db_task.description,
-            completed=db_task.completed,
-            user_id=db_task.user_id,
-            due_date=db_task.due_date,
-            priority=db_task.priority,
-            created_at=db_task.created_at,
-            updated_at=db_task.updated_at
-        )
+            return TaskResponse(
+                id=db_task.id,
+                title=db_task.title,
+                description=db_task.description,
+                completed=db_task.completed,
+                user_id=db_task.user_id,
+                due_date=db_task.due_date,
+                priority=db_task.priority,
+                created_at=db_task.created_at,
+                updated_at=db_task.updated_at
+            )
+        except Exception as e:
+            session.rollback()
+            raise e

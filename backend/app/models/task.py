@@ -43,6 +43,7 @@ class TaskUpdate(SQLModel):
     description: Optional[str] = Field(default=None, max_length=1000)
     completed: Optional[bool] = None
     due_date: Optional[datetime] = None
+    priority: Optional[str] = Field(default=None, max_length=20)  # Add priority field
 
 
 class TaskCreate(TaskBase):

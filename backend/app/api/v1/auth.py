@@ -27,7 +27,7 @@ class RegisterRequest(BaseModel):
 
 
 class RefreshTokenRequest(BaseModel):
-    refreshToken: str
+    refresh_token: str  # Changed to snake_case to match frontend expectation
 
 
 @router.post("/login")
@@ -232,7 +232,7 @@ async def refresh_token_endpoint(refresh_data: RefreshTokenRequest):
     Token refresh endpoint
     """
     try:
-        refresh_token = refresh_data.refreshToken
+        refresh_token = refresh_data.refresh_token
 
         # In a real implementation, verify the refresh token
         # For now, we'll generate a new access token
