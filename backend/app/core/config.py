@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     # CORS configuration
     ALLOWED_ORIGINS: List[str] = [
-        "http://localhost:3000", 
+        "http://localhost:3000",
         "http://localhost:3003", 
         "https://frontend-five-ecru-11.vercel.app",  # Your deployed frontend
         "https://tabindaseher-full-stack-todo-app.hf.space"  # Your deployed backend
