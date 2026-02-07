@@ -17,7 +17,8 @@ class TaskService:
         Create a new task for a user
         """
         try:
-            # Create the task instance
+            # Create the task instance with current datetime
+            current_time = datetime.utcnow()
             db_task = Task(
                 title=task_create.title,
                 description=task_create.description,
@@ -25,13 +26,12 @@ class TaskService:
                 user_id=task_create.user_id,
                 due_date=task_create.due_date,
                 priority=task_create.priority,
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow()
+                created_at=current_time,
+                updated_at=current_time
             )
             
             # Add to session and commit in a single transaction
             session.add(db_task)
-            session.flush()  # Ensure the ID is generated
             session.commit()
             session.refresh(db_task)
 

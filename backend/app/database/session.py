@@ -12,11 +12,9 @@ if settings.DATABASE_URL.startswith("sqlite"):
         echo=False,  # Set to True for debugging SQL queries
         connect_args={
             "check_same_thread": False,  # Required for multi-threading
-            "timeout": 30,  # Add timeout to prevent hanging
-            "uri": True  # Enable URI support for better SQLite handling
+            "timeout": 10,  # Reduced timeout
         },
-        pool_pre_ping=True,  # Verify connections before use
-        pool_recycle=300  # Recycle connections to prevent stale connections
+        poolclass=None  # Disable connection pooling for SQLite to avoid potential deadlocks
     )
 else:
     # Configuration for PostgreSQL or other databases
@@ -25,7 +23,6 @@ else:
         pool_size=settings.DB_POOL_SIZE,
         pool_timeout=settings.DB_POOL_TIMEOUT,
         echo=False,  # Set to True for debugging SQL queries
-        pool_pre_ping=True,  # Verify connections before use
     )
 
 
