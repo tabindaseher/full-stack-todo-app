@@ -16,32 +16,37 @@ class TaskService:
         """
         Create a new task for a user
         """
-        db_task = Task(
-            title=task_create.title,
-            description=task_create.description,
-            completed=task_create.completed,
-            user_id=task_create.user_id,
-            due_date=task_create.due_date,
-            priority=task_create.priority,  # Now that TaskCreate has priority field
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
-        )
-        session.add(db_task)
-        session.commit()
-        session.refresh(db_task)
+        try:
+            db_task = Task(
+                title=task_create.title,
+                description=task_create.description,
+                completed=task_create.completed,
+                user_id=task_create.user_id,
+                due_date=task_create.due_date,
+                priority=task_create.priority,  # Now that TaskCreate has priority field
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            session.add(db_task)
+            session.commit()
+            session.refresh(db_task)
 
-        # Convert to response model
-        return TaskResponse(
-            id=db_task.id,
-            title=db_task.title,
-            description=db_task.description,
-            completed=db_task.completed,
-            user_id=db_task.user_id,
-            due_date=db_task.due_date,
-            priority=db_task.priority,
-            created_at=db_task.created_at,
-            updated_at=db_task.updated_at
-        )
+            # Convert to response model
+            return TaskResponse(
+                id=db_task.id,
+                title=db_task.title,
+                description=db_task.description,
+                completed=db_task.completed,
+                user_id=db_task.user_id,
+                due_date=db_task.due_date,
+                priority=db_task.priority,
+                created_at=db_task.created_at,
+                updated_at=db_task.updated_at
+            )
+        except Exception as e:
+            # Rollback in case of error
+            session.rollback()
+            raise e
 
     @staticmethod
     def get_task_by_id(*, session: Session, task_id: int, user_id: str) -> Optional[TaskResponse]:
@@ -72,29 +77,38 @@ class TaskService:
         """
         Get all tasks for a specific user with optional filters
         """
-        statement = select(Task).where(Task.user_id == user_id)
+        try:
+            statement = select(Task).where(Task.user_id == user_id)
 
-        if completed is not None:
-            statement = statement.where(Task.completed == completed)
+            if completed is not None:
+                statement = statement.where(Task.completed == completed)
 
-        statement = statement.offset(skip).limit(limit)
-        db_tasks = session.exec(statement).all()
+            # Apply offset and limit to the statement
+            statement = statement.offset(skip).limit(limit)
+            
+            # Execute the query
+            result = session.exec(statement)
+            db_tasks = result.all()
 
-        tasks = []
-        for db_task in db_tasks:
-            tasks.append(TaskResponse(
-                id=db_task.id,
-                title=db_task.title,
-                description=db_task.description,
-                completed=db_task.completed,
-                user_id=db_task.user_id,
-                due_date=db_task.due_date,
-                priority=db_task.priority,
-                created_at=db_task.created_at,
-                updated_at=db_task.updated_at
-            ))
+            tasks = []
+            for db_task in db_tasks:
+                tasks.append(TaskResponse(
+                    id=db_task.id,
+                    title=db_task.title,
+                    description=db_task.description,
+                    completed=db_task.completed,
+                    user_id=db_task.user_id,
+                    due_date=db_task.due_date,
+                    priority=db_task.priority,
+                    created_at=db_task.created_at,
+                    updated_at=db_task.updated_at
+                ))
 
-        return tasks
+            return tasks
+        except Exception as e:
+            # Rollback in case of error
+            session.rollback()
+            raise e
 
     @staticmethod
     def update_task(*, session: Session, task_id: int, user_id: str,
