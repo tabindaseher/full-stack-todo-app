@@ -2,8 +2,12 @@ import axios from 'axios';
 import { getToken, getRefreshToken, removeTokens } from '../utils/auth';
 
 // Create axios instance with base configuration
+// Check if we're running against Hugging Face Space backend
+const isHfSpaceBackend = process.env.NEXT_PUBLIC_API_BASE_URL?.includes('hf.space');
+const apiPrefix = isHfSpaceBackend ? '' : '/api';
+
 const apiClient = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api`,
+  baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}${apiPrefix}`,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -39,7 +43,9 @@ apiClient.interceptors.response.use(
       const refreshToken = getRefreshToken();
       if (refreshToken) {
         try {
-          const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/auth/refresh`, {
+          const isHfSpaceBackend = process.env.NEXT_PUBLIC_API_BASE_URL?.includes('hf.space');
+          const apiPrefix = isHfSpaceBackend ? '' : '/api';
+          const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}${apiPrefix}/auth/refresh`, {
             refresh_token: refreshToken
           });
 

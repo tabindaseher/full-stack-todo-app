@@ -50,7 +50,9 @@ app.add_middleware(
 # --------------------
 # API Routes
 # --------------------
-app.include_router(api_router, prefix="/api")
+# Mount routes both with and without /api prefix to support both local and deployed environments
+app.include_router(api_router, prefix="/api")  # For local development
+app.include_router(api_router)  # For Hugging Face deployment (at root level)
 
 # --------------------
 # Startup Event
