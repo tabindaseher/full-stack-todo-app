@@ -17,17 +17,21 @@ class TaskService:
         Create a new task for a user
         """
         try:
+            # Create the task instance
             db_task = Task(
                 title=task_create.title,
                 description=task_create.description,
                 completed=task_create.completed,
                 user_id=task_create.user_id,
                 due_date=task_create.due_date,
-                priority=task_create.priority,  # Now that TaskCreate has priority field
+                priority=task_create.priority,
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow()
             )
+            
+            # Add to session and commit in a single transaction
             session.add(db_task)
+            session.flush()  # Ensure the ID is generated
             session.commit()
             session.refresh(db_task)
 
@@ -78,6 +82,7 @@ class TaskService:
         Get all tasks for a specific user with optional filters
         """
         try:
+            # Build the query
             statement = select(Task).where(Task.user_id == user_id)
 
             if completed is not None:
@@ -85,11 +90,11 @@ class TaskService:
 
             # Apply offset and limit to the statement
             statement = statement.offset(skip).limit(limit)
-            
-            # Execute the query
-            result = session.exec(statement)
-            db_tasks = result.all()
 
+            # Execute the query and fetch results
+            db_tasks = session.exec(statement).all()
+
+            # Convert to response models
             tasks = []
             for db_task in db_tasks:
                 tasks.append(TaskResponse(
