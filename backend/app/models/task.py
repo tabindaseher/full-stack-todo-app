@@ -18,12 +18,8 @@ class Task(TaskBase, table=True):
     Task model representing a todo item in the database
     """
     id: Optional[int] = Field(default=None, primary_key=True)
-    created_at: Optional[datetime] = Field(
-        sa_column=Column(DateTime, default=datetime.utcnow)
-    )
-    updated_at: Optional[datetime] = Field(
-        sa_column=Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    )
+    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    updated_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
 
 
 class TaskPublic(TaskBase):
