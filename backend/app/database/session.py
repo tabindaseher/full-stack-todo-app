@@ -6,11 +6,14 @@ from typing import Generator
 # Create database engine
 # For SQLite, we need to configure it differently than for PostgreSQL
 if settings.DATABASE_URL.startswith("sqlite"):
-    # SQLite specific configuration
+    # SQLite specific configuration for better compatibility
     engine = create_engine(
         settings.DATABASE_URL,
         echo=False,  # Set to True for debugging SQL queries
-        connect_args={"check_same_thread": False}  # Required for SQLite with threading
+        connect_args={
+            "check_same_thread": False,  # Required for multi-threading
+            "timeout": 30  # Add timeout to prevent hanging
+        }
     )
 else:
     # Configuration for PostgreSQL or other databases
