@@ -4,12 +4,22 @@ from typing import Generator
 
 
 # Create database engine
-engine = create_engine(
-    settings.DATABASE_URL,
-    pool_size=settings.DB_POOL_SIZE,
-    pool_timeout=settings.DB_POOL_TIMEOUT,
-    echo=False  # Set to True for debugging SQL queries
-)
+# For SQLite, we need to configure it differently than for PostgreSQL
+if settings.DATABASE_URL.startswith("sqlite"):
+    # SQLite specific configuration
+    engine = create_engine(
+        settings.DATABASE_URL,
+        echo=False,  # Set to True for debugging SQL queries
+        connect_args={"check_same_thread": False}  # Required for SQLite with threading
+    )
+else:
+    # Configuration for PostgreSQL or other databases
+    engine = create_engine(
+        settings.DATABASE_URL,
+        pool_size=settings.DB_POOL_SIZE,
+        pool_timeout=settings.DB_POOL_TIMEOUT,
+        echo=False  # Set to True for debugging SQL queries
+    )
 
 
 def get_session() -> Generator[Session, None, None]:

@@ -2,9 +2,13 @@ import axios from 'axios';
 import { getToken, getRefreshToken, removeTokens } from '../utils/auth';
 
 // Create axios instance with base configuration
-// Check if we're running against Hugging Face Space backend
-const isHfSpaceBackend = process.env.NEXT_PUBLIC_API_BASE_URL?.includes('hf.space');
-const apiPrefix = isHfSpaceBackend ? '' : '/api';
+// Initially assume the API prefix based on the backend URL
+let apiPrefix = '/api'; // Default for local development
+if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+  if (process.env.NEXT_PUBLIC_API_BASE_URL.includes('hf.space')) {
+    apiPrefix = ''; // No prefix for Hugging Face deployment
+  }
+}
 
 const apiClient = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}${apiPrefix}`,
@@ -43,9 +47,11 @@ apiClient.interceptors.response.use(
       const refreshToken = getRefreshToken();
       if (refreshToken) {
         try {
-          const isHfSpaceBackend = process.env.NEXT_PUBLIC_API_BASE_URL?.includes('hf.space');
-          const apiPrefix = isHfSpaceBackend ? '' : '/api';
-          const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}${apiPrefix}/auth/refresh`, {
+          let refreshApiPrefix = '/api'; // Default for local development
+          if (process.env.NEXT_PUBLIC_API_BASE_URL?.includes('hf.space')) {
+            refreshApiPrefix = ''; // No prefix for Hugging Face deployment
+          }
+          const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}${refreshApiPrefix}/auth/refresh`, {
             refresh_token: refreshToken
           });
 
