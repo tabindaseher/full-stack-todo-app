@@ -1,6 +1,6 @@
 import { tasksApi } from './api';
 import { TodoItem, CreateTodoItemData, UpdateTodoItemData } from '../models/todo-item';
-import { getUser } from '../utils/auth';
+import { getUserInfo } from '../utils/auth';
 
 /**
  * Service for task-related operations
@@ -38,7 +38,7 @@ interface GetTodosParams {
  */
 export const getTasks = async (params?: GetTasksParams): Promise<GetTasksResponse> => {
   try {
-    const user = getUser();
+    const user = getUserInfo();
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -96,7 +96,7 @@ export const getTasks = async (params?: GetTasksParams): Promise<GetTasksRespons
     }
 
     console.log('✅ Processed tasks:', tasks);
-    return { tasks, todos: tasks, total, limit, offset }; // Return both tasks and todos for backward compatibility
+    return { tasks, total, limit, offset }; // Return the expected GetTasksResponse type
   } catch (error: any) {
     console.error('❌ Error fetching tasks:', error);
     console.error('❌ Error response:', error?.response);
@@ -110,7 +110,7 @@ export const getTasks = async (params?: GetTasksParams): Promise<GetTasksRespons
  */
 export const getTaskById = async (id: string): Promise<TodoItem> => {
   try {
-    const user = getUser();
+    const user = getUserInfo();
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -141,7 +141,7 @@ export const getTaskById = async (id: string): Promise<TodoItem> => {
  */
 export const createTask = async (data: CreateTodoItemData): Promise<TodoItem> => {
   try {
-    const user = getUser();
+    const user = getUserInfo();
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -178,7 +178,7 @@ export const createTask = async (data: CreateTodoItemData): Promise<TodoItem> =>
  */
 export const updateTask = async (id: string, data: UpdateTodoItemData): Promise<TodoItem> => {
   try {
-    const user = getUser();
+    const user = getUserInfo();
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -215,7 +215,7 @@ export const updateTask = async (id: string, data: UpdateTodoItemData): Promise<
  */
 export const deleteTask = async (id: string): Promise<void> => {
   try {
-    const user = getUser();
+    const user = getUserInfo();
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -232,7 +232,7 @@ export const deleteTask = async (id: string): Promise<void> => {
  */
 export const toggleTaskCompletion = async (id: string, completed: boolean): Promise<TodoItem> => {
   try {
-    const user = getUser();
+    const user = getUserInfo();
     if (!user) {
       throw new Error('User not authenticated');
     }
