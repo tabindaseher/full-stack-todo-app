@@ -1,41 +1,48 @@
-import { todosApi } from './api';
+import { tasksApi } from './api';
 import { TodoItem, CreateTodoItemData, UpdateTodoItemData } from '../models/todo-item';
+import { getUser } from '../utils/auth';
 
 /**
- * Service for todo-related operations
+ * Service for task-related operations
  */
 
-interface GetTodosParams {
+interface GetTasksParams {
   status?: 'all' | 'active' | 'completed';
   priority?: 'low' | 'medium' | 'high';
   limit?: number;
   offset?: number;
 }
 
-interface GetTodosResponse {
-  todos: TodoItem[];
+interface GetTasksResponse {
+  tasks: TodoItem[];
   total: number;
   limit: number;
   offset: number;
 }
 
 /**
- * Get all todos for the authenticated user
+ * Get all tasks for the authenticated user
  */
-export const getTodos = async (params?: GetTodosParams): Promise<GetTodosResponse> => {
+export const getTasks = async (params?: GetTasksParams): Promise<GetTasksResponse> => {
   try {
-    console.log('🔍 getTodos called with params:', params);
-    console.log('🔍 API endpoint:', todosApi);
+    const user = getUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
     
-    const response = await todosApi.getAll(params);
-    
+    console.log('🔍 getTasks called with params:', params);
+    console.log('🔍 API endpoint:', tasksApi);
+    console.log('🔍 Current user ID:', user.id);
+
+    const response = await tasksApi.getAll(user.id, params);
+
     console.log('✅ Raw API response:', response);
     console.log('✅ Response data:', response.data);
 
     // Handle different response formats - the API returns either:
     // 1. An array directly (current backend format)
-    // 2. An object with todos property (expected format)
-    let todos: TodoItem[] = [];
+    // 2. An object with tasks property (expected format)
+    let tasks: TodoItem[] = [];
     let total = 0;
     let limit = 100;
     let offset = 0;
@@ -43,7 +50,7 @@ export const getTodos = async (params?: GetTodosParams): Promise<GetTodosRespons
     if (Array.isArray(response.data)) {
       console.log('📦 Response is array format');
       // Direct array response from backend - need to map fields from snake_case to camelCase
-      todos = response.data.map((task: any) => ({
+      tasks = response.data.map((task: any) => ({
         id: String(task.id),
         title: task.title || '',
         description: task.description,
@@ -57,9 +64,9 @@ export const getTodos = async (params?: GetTodosParams): Promise<GetTodosRespons
       total = response.data.length;
     } else if (response.data && typeof response.data === 'object') {
       console.log('📦 Response is object format');
-      // Object response with todos property
-      const responseTodos = response.data.todos || [];
-      todos = responseTodos.map((task: any) => ({
+      // Object response with tasks property
+      const responseTasks = response.data.tasks || [];
+      tasks = responseTasks.map((task: any) => ({
         id: String(task.id),
         title: task.title || '',
         description: task.description,
@@ -70,15 +77,15 @@ export const getTodos = async (params?: GetTodosParams): Promise<GetTodosRespons
         updatedAt: task.updated_at || new Date().toISOString(), // Map updated_at to updatedAt
         userId: task.user_id || '', // Map user_id to userId
       }));
-      total = response.data.total || responseTodos.length || 0;
+      total = response.data.total || responseTasks.length || 0;
       limit = response.data.limit || 100;
       offset = response.data.offset || 0;
     }
 
-    console.log('✅ Processed todos:', todos);
-    return { todos, total, limit, offset };
+    console.log('✅ Processed tasks:', tasks);
+    return { tasks, total, limit, offset };
   } catch (error: any) {
-    console.error('❌ Error fetching todos:', error);
+    console.error('❌ Error fetching tasks:', error);
     console.error('❌ Error response:', error?.response);
     console.error('❌ Error message:', error?.message);
     throw error;
@@ -86,11 +93,16 @@ export const getTodos = async (params?: GetTodosParams): Promise<GetTodosRespons
 };
 
 /**
- * Get a single todo by ID
+ * Get a single task by ID
  */
-export const getTodoById = async (id: string): Promise<TodoItem> => {
+export const getTaskById = async (id: string): Promise<TodoItem> => {
   try {
-    const response = await todosApi.getById(id);
+    const user = getUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    
+    const response = await tasksApi.getById(user.id, id);
 
     // Map response fields from snake_case to camelCase
     const task = response.data;
@@ -106,17 +118,28 @@ export const getTodoById = async (id: string): Promise<TodoItem> => {
       userId: task.user_id || '', // Map user_id to userId
     };
   } catch (error) {
-    console.error(`Error fetching todo with ID ${id}:`, error);
+    console.error(`Error fetching task with ID ${id}:`, error);
     throw error;
   }
 };
 
 /**
- * Create a new todo
+ * Create a new task
  */
-export const createTodo = async (data: CreateTodoItemData): Promise<TodoItem> => {
+export const createTask = async (data: CreateTodoItemData): Promise<TodoItem> => {
   try {
-    const response = await todosApi.create(data);
+    const user = getUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    
+    // Only send title and description as per spec
+    const requestData = {
+      title: data.title,
+      description: data.description
+    };
+    
+    const response = await tasksApi.create(user.id, requestData);
 
     // Map response fields from snake_case to camelCase
     const task = response.data;
@@ -132,17 +155,28 @@ export const createTodo = async (data: CreateTodoItemData): Promise<TodoItem> =>
       userId: task.user_id || '', // Map user_id to userId
     };
   } catch (error) {
-    console.error('Error creating todo:', error);
+    console.error('Error creating task:', error);
     throw error;
   }
 };
 
 /**
- * Update an existing todo
+ * Update an existing task
  */
-export const updateTodo = async (id: string, data: UpdateTodoItemData): Promise<TodoItem> => {
+export const updateTask = async (id: string, data: UpdateTodoItemData): Promise<TodoItem> => {
   try {
-    const response = await todosApi.update(id, data);
+    const user = getUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    
+    // Only send allowed fields as per spec
+    const requestData: any = {};
+    if (data.title !== undefined) requestData.title = data.title;
+    if (data.description !== undefined) requestData.description = data.description;
+    if (data.completed !== undefined) requestData.completed = data.completed;
+    
+    const response = await tasksApi.update(user.id, id, requestData);
 
     // Map response fields from snake_case to camelCase
     const task = response.data;
@@ -158,29 +192,39 @@ export const updateTodo = async (id: string, data: UpdateTodoItemData): Promise<
       userId: task.user_id || '', // Map user_id to userId
     };
   } catch (error) {
-    console.error(`Error updating todo with ID ${id}:`, error);
+    console.error(`Error updating task with ID ${id}:`, error);
     throw error;
   }
 };
 
 /**
- * Delete a todo by ID
+ * Delete a task by ID
  */
-export const deleteTodo = async (id: string): Promise<void> => {
+export const deleteTask = async (id: string): Promise<void> => {
   try {
-    await todosApi.delete(id);
+    const user = getUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    
+    await tasksApi.delete(user.id, id);
   } catch (error) {
-    console.error(`Error deleting todo with ID ${id}:`, error);
+    console.error(`Error deleting task with ID ${id}:`, error);
     throw error;
   }
 };
 
 /**
- * Toggle the completion status of a todo
+ * Toggle the completion status of a task
  */
-export const toggleTodoCompletion = async (id: string, completed: boolean): Promise<TodoItem> => {
+export const toggleTaskCompletion = async (id: string, completed: boolean): Promise<TodoItem> => {
   try {
-    const response = await todosApi.toggleComplete(id, completed);
+    const user = getUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    
+    const response = await tasksApi.toggleComplete(user.id, id, completed);
 
     // Map response fields from snake_case to camelCase
     const task = response.data;
@@ -196,7 +240,15 @@ export const toggleTodoCompletion = async (id: string, completed: boolean): Prom
       userId: task.user_id || '', // Map user_id to userId
     };
   } catch (error) {
-    console.error(`Error toggling completion for todo with ID ${id}:`, error);
+    console.error(`Error toggling completion for task with ID ${id}:`, error);
     throw error;
   }
 };
+
+// Export the old function names for backward compatibility
+export const getTodos = getTasks;
+export const getTodoById = getTaskById;
+export const createTodo = createTask;
+export const updateTodo = updateTask;
+export const deleteTodo = deleteTask;
+export const toggleTodoCompletion = toggleTaskCompletion;

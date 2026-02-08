@@ -113,29 +113,23 @@ export const authApi = {
     apiClient.post('/auth/refresh', { refreshToken }),
 };
 
-// Export specific API functions for todos
-export const todosApi = {
-  getAll: (params?: { status?: string; priority?: string; limit?: number; offset?: number }) =>
-    apiClient.get('/todos', { params }),
+// Export specific API functions for tasks
+export const tasksApi = {
+  getAll: (userId: string, params?: { status?: string; priority?: string; limit?: number; offset?: number }) =>
+    apiClient.get(`/${userId}/tasks`, { params }),
 
-  getById: (id: string) =>
-    apiClient.get(`/todos/${id}`),
+  getById: (userId: string, id: string) =>
+    apiClient.get(`/${userId}/tasks/${id}`),
 
-  create: (data: { title: string; description?: string; dueDate?: string | null; priority?: string }) =>
-    apiClient.post('/todos', {
-      ...data,
-      priority: data.priority || 'medium'  // Ensure priority defaults to 'medium' if not provided
-    }),
+  create: (userId: string, data: { title: string; description?: string }) =>
+    apiClient.post(`/${userId}/tasks`, data),
 
-  update: (id: string, data: { title?: string; description?: string; completed?: boolean; dueDate?: string | null; priority?: string }) =>
-    apiClient.put(`/todos/${id}`, {
-      ...data,
-      priority: data.priority || undefined  // Only send priority if it's provided
-    }),
+  update: (userId: string, id: string, data: { title?: string; description?: string; completed?: boolean }) =>
+    apiClient.put(`/${userId}/tasks/${id}`, data),
 
-  delete: (id: string) =>
-    apiClient.delete(`/todos/${id}`),
+  delete: (userId: string, id: string) =>
+    apiClient.delete(`/${userId}/tasks/${id}`),
 
-  toggleComplete: (id: string, completed: boolean) =>
-    apiClient.patch(`/todos/${id}/complete`, { completed }),
+  toggleComplete: (userId: string, id: string, completed: boolean) =>
+    apiClient.patch(`/${userId}/tasks/${id}/complete`, { completed }),
 };
