@@ -24,7 +24,13 @@ interface GetTodosResponse {
  */
 export const getTodos = async (params?: GetTodosParams): Promise<GetTodosResponse> => {
   try {
+    console.log('🔍 getTodos called with params:', params);
+    console.log('🔍 API endpoint:', todosApi);
+    
     const response = await todosApi.getAll(params);
+    
+    console.log('✅ Raw API response:', response);
+    console.log('✅ Response data:', response.data);
 
     // Handle different response formats - the API returns either:
     // 1. An array directly (current backend format)
@@ -35,6 +41,7 @@ export const getTodos = async (params?: GetTodosParams): Promise<GetTodosRespons
     let offset = 0;
 
     if (Array.isArray(response.data)) {
+      console.log('📦 Response is array format');
       // Direct array response from backend - need to map fields from snake_case to camelCase
       todos = response.data.map((task: any) => ({
         id: String(task.id),
@@ -49,6 +56,7 @@ export const getTodos = async (params?: GetTodosParams): Promise<GetTodosRespons
       }));
       total = response.data.length;
     } else if (response.data && typeof response.data === 'object') {
+      console.log('📦 Response is object format');
       // Object response with todos property
       const responseTodos = response.data.todos || [];
       todos = responseTodos.map((task: any) => ({
@@ -67,9 +75,12 @@ export const getTodos = async (params?: GetTodosParams): Promise<GetTodosRespons
       offset = response.data.offset || 0;
     }
 
+    console.log('✅ Processed todos:', todos);
     return { todos, total, limit, offset };
-  } catch (error) {
-    console.error('Error fetching todos:', error);
+  } catch (error: any) {
+    console.error('❌ Error fetching todos:', error);
+    console.error('❌ Error response:', error?.response);
+    console.error('❌ Error message:', error?.message);
     throw error;
   }
 };

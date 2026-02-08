@@ -10,8 +10,15 @@ if (process.env.NEXT_PUBLIC_API_BASE_URL) {
   }
 }
 
+const baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}${apiPrefix}`;
+
+console.log('🔧 API Configuration:');
+console.log('  - NEXT_PUBLIC_API_BASE_URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
+console.log('  - API Prefix:', apiPrefix);
+console.log('  - Final Base URL:', baseURL);
+
 const apiClient = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}${apiPrefix}`,
+  baseURL: baseURL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -22,12 +29,19 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     const token = getToken();
+    console.log('🔐 Request interceptor:');
+    console.log('  - URL:', config.url);
+    console.log('  - Full URL:', (config.baseURL || '') + (config.url || ''));
+    console.log('  - Token exists:', !!token);
+    console.log('  - Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
   (error) => {
+    console.error('❌ Request interceptor error:', error);
     return Promise.reject(error);
   }
 );

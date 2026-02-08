@@ -21,7 +21,13 @@ const DashboardPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
+      
+      console.log('🔍 Loading todos...');
+      console.log('API Base URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
+      
       const response = await getTodos();
+      
+      console.log('✅ Todos response:', response);
 
       // Safely handle response with fallback for undefined/empty data
       let todosFromResponse = response?.todos || [];
@@ -33,11 +39,16 @@ const DashboardPage: React.FC = () => {
         priority: todo?.priority || 'medium', // Ensure priority has a default
       }));
 
+      console.log('✅ Normalized todos:', normalizedTodos);
       setTodos(normalizedTodos);
       // Explicitly clear error after successful load to ensure UI state is correct
       setError(null);
-    } catch (err) {
-      console.error('Error loading todos:', err);
+    } catch (err: any) {
+      console.error('❌ Error loading todos:', err);
+      console.error('❌ Error response:', err?.response);
+      console.error('❌ Error message:', err?.message);
+      console.error('❌ Error status:', err?.response?.status);
+      console.error('❌ Error data:', err?.response?.data);
       setError('Failed to load todos. Please try again later.');
     } finally {
       setLoading(false);
@@ -46,7 +57,10 @@ const DashboardPage: React.FC = () => {
 
   const handleCreateTodo = async (todoData: CreateTodoItemData) => {
     try {
+      console.log('🔍 Creating todo with data:', todoData);
       const newTodo = await createTodo(todoData);
+      console.log('✅ Todo created:', newTodo);
+      
       // Ensure the new todo has all required fields in the correct format
       const normalizedTodo = {
         ...newTodo,
@@ -54,8 +68,10 @@ const DashboardPage: React.FC = () => {
         priority: newTodo.priority || 'medium', // Ensure priority has a default
       };
       setTodos([normalizedTodo, ...todos]); // Add new todo to the top of the list
-    } catch (err) {
-      console.error('Error creating todo:', err);
+    } catch (err: any) {
+      console.error('❌ Error creating todo:', err);
+      console.error('❌ Error response:', err?.response);
+      console.error('❌ Error data:', err?.response?.data);
       throw err; // Re-throw so the form can handle the error
     }
   };
