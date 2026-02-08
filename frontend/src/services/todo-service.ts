@@ -20,6 +20,19 @@ interface GetTasksResponse {
   offset: number;
 }
 
+interface GetTodosResponse {
+  todos: TodoItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+interface GetTodosParams {
+  status?: 'all' | 'active' | 'completed';
+  limit?: number;
+  offset?: number;
+}
+
 /**
  * Get all tasks for the authenticated user
  */
@@ -83,7 +96,7 @@ export const getTasks = async (params?: GetTasksParams): Promise<GetTasksRespons
     }
 
     console.log('✅ Processed tasks:', tasks);
-    return { tasks, total, limit, offset };
+    return { tasks, todos: tasks, total, limit, offset }; // Return both tasks and todos for backward compatibility
   } catch (error: any) {
     console.error('❌ Error fetching tasks:', error);
     console.error('❌ Error response:', error?.response);
@@ -245,8 +258,17 @@ export const toggleTaskCompletion = async (id: string, completed: boolean): Prom
   }
 };
 
-// Export the old function names for backward compatibility
-export const getTodos = getTasks;
+// Export the old function names for backward compatibility with proper typing
+export const getTodos = async (params?: GetTodosParams): Promise<GetTodosResponse> => {
+  const result = await getTasks(params);
+  return {
+    todos: result.tasks,  // Map tasks to todos for backward compatibility
+    total: result.total,
+    limit: result.limit,
+    offset: result.offset
+  };
+};
+
 export const getTodoById = getTaskById;
 export const createTodo = createTask;
 export const updateTodo = updateTask;
