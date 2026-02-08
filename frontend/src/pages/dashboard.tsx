@@ -30,7 +30,7 @@ const DashboardPage: React.FC = () => {
       console.log('✅ Todos response:', response);
 
       // Safely handle response with fallback for undefined/empty data
-      let todosFromResponse = response?.tasks || [];
+      let todosFromResponse = response?.todos || [];
 
       // Normalize todos to ensure they match the expected interface
       const normalizedTodos = todosFromResponse.map(todo => ({
