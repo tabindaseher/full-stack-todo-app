@@ -50,9 +50,17 @@ app.add_middleware(
 # --------------------
 # API Routes
 # --------------------
-# Mount routes both with and without /api prefix to support both local and deployed environments
-app.include_router(api_router, prefix="/api")  # For local development
-app.include_router(api_router)  # For Hugging Face deployment (at root level)
+import os
+
+# Check if we're running in Hugging Face Space environment
+is_hf_space = bool(os.getenv("HF_SPACE_ID")) or os.getenv("RUNTIME_ENVIRONMENT") == "huggingface" or "huggingface" in os.getenv("HOSTNAME", "").lower()
+
+if is_hf_space:
+    # For Hugging Face Spaces, mount routes at root level
+    app.include_router(api_router)
+else:
+    # For local development and other environments, use /api prefix
+    app.include_router(api_router, prefix="/api")
 
 # --------------------
 # Startup Event
