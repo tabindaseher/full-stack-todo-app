@@ -2,11 +2,16 @@ import axios from 'axios';
 import { getToken, getRefreshToken, removeTokens } from '../utils/auth';
 
 // Create axios instance with base configuration
-// Since your backend routes are mounted under /api, always append /api to the base URL
-const baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api`;
+// Determine if we need the /api prefix based on the backend deployment
+// For Hugging Face Spaces, routes are mounted at root; for other deployments, they're under /api
+const isHfSpace = process.env.NEXT_PUBLIC_API_BASE_URL?.includes('hf.space') || false;
+const apiPrefix = isHfSpace ? '' : '/api';
+const baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}${apiPrefix}`;
 
 console.log('🔧 API Configuration:');
 console.log('  - NEXT_PUBLIC_API_BASE_URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
+console.log('  - Is HF Space:', isHfSpace);
+console.log('  - API Prefix:', apiPrefix);
 console.log('  - Final Base URL:', baseURL);
 
 const apiClient = axios.create({
@@ -53,8 +58,10 @@ apiClient.interceptors.response.use(
       const refreshToken = getRefreshToken();
       if (refreshToken) {
         try {
-          // Use the same base URL as the main client with /api prefix
-          const refreshBaseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api`;
+          // Use the same base URL as the main client with appropriate prefix
+          const isHfSpace = process.env.NEXT_PUBLIC_API_BASE_URL?.includes('hf.space') || false;
+          const apiPrefix = isHfSpace ? '' : '/api';
+          const refreshBaseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}${apiPrefix}`;
           
           const response = await axios.post(`${refreshBaseURL}/auth/refresh`, {
             refresh_token: refreshToken
