@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -51,13 +52,32 @@ app.add_middleware(
 # API Routes
 # --------------------
 
-logger.info(f"Environment detection - is_hf_space: {settings.is_hf_space}")
+# Determine if running in Hugging Face Space environment
+# Check multiple indicators for Hugging Face Space environment
+def is_hf_space_runtime():
+    """Check if running in Hugging Face Space environment at runtime"""
+    hf_space_id = os.getenv("HF_SPACE_ID")
+    runtime_env = os.getenv("RUNTIME_ENVIRONMENT")
+    hostname = os.getenv("HOSTNAME", "")
+    server_name = os.getenv("SERVER_NAME", "")
+    
+    is_hf = bool(hf_space_id) or runtime_env == "huggingface" or \
+            "huggingface" in hostname.lower() or \
+            "huggingface" in server_name.lower() or \
+            hostname.endswith(".hf.space") or \
+            server_name.endswith(".hf.space")
+            
+    return is_hf
+
+runtime_is_hf_space = is_hf_space_runtime()
+
+logger.info(f"Environment detection - is_hf_space: {runtime_is_hf_space}")
 logger.info(f"Host: {os.getenv('HOSTNAME', 'not set')}")
 logger.info(f"Server name: {os.getenv('SERVER_NAME', 'not set')}")
 logger.info(f"Runtime environment: {os.getenv('RUNTIME_ENVIRONMENT', 'not set')}")
 logger.info(f"HF Space ID: {os.getenv('HF_SPACE_ID', 'not set')}")
 
-if settings.is_hf_space:
+if runtime_is_hf_space:
     # For Hugging Face Spaces, mount routes at root level
     logger.info("Running in Hugging Face Space environment - mounting routes at root")
     app.include_router(api_router)
@@ -74,8 +94,7 @@ async def startup_event():
     """Initialize database tables on startup"""
     try:
         logger.info(f"Starting up - Database URL: {settings.DATABASE_URL}")
-        if hasattr(settings, 'is_hf_space'):
-            logger.info(f"HF Space environment: {settings.is_hf_space}")
+        logger.info(f"HF Space environment (runtime): {runtime_is_hf_space}")
         SQLModel.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")
     except Exception as e:

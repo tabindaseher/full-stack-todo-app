@@ -6,7 +6,9 @@ from typing import Generator
 
 def get_persistent_db_path():
     """Get a persistent database path for Hugging Face Spaces"""
-    if settings.is_hf_space:
+    # Since we're using PostgreSQL in the live environment, we don't need to modify the path
+    # Only apply SQLite-specific persistence logic for SQLite databases
+    if settings.DATABASE_URL.startswith("sqlite") and settings.is_hf_space:
         # In Hugging Face Spaces, use a path that persists
         # Create data directory if it doesn't exist
         data_dir = "/data" if os.path.exists("/data") else "./data"
@@ -17,7 +19,7 @@ def get_persistent_db_path():
         db_path = os.path.join(data_dir, "todo_app.db")
         return f"sqlite:///{db_path}"
     else:
-        # For local development, use the original path
+        # For local development or non-SQLite databases, use the original path
         return settings.DATABASE_URL
 
 
