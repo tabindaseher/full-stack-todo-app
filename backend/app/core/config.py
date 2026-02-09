@@ -34,7 +34,19 @@ class Settings(BaseSettings):
     def is_hf_space(self) -> bool:
         """Check if running in Hugging Face Space environment"""
         import os
-        return bool(os.getenv("HF_SPACE_ID")) or os.getenv("RUNTIME_ENVIRONMENT") == "huggingface" or "huggingface" in os.getenv("HOSTNAME", "").lower()
+        # Check multiple indicators for Hugging Face Space environment
+        hf_space_id = os.getenv("HF_SPACE_ID")
+        runtime_env = os.getenv("RUNTIME_ENVIRONMENT")
+        hostname = os.getenv("HOSTNAME", "")
+        server_name = os.getenv("SERVER_NAME", "")
+        
+        is_hf = bool(hf_space_id) or runtime_env == "huggingface" or \
+                "huggingface" in hostname.lower() or \
+                "huggingface" in server_name.lower() or \
+                hostname.endswith(".hf.space") or \
+                server_name.endswith(".hf.space")
+                
+        return is_hf
 
 
 settings = Settings()

@@ -51,6 +51,12 @@ app.add_middleware(
 # API Routes
 # --------------------
 
+logger.info(f"Environment detection - is_hf_space: {settings.is_hf_space}")
+logger.info(f"Host: {os.getenv('HOSTNAME', 'not set')}")
+logger.info(f"Server name: {os.getenv('SERVER_NAME', 'not set')}")
+logger.info(f"Runtime environment: {os.getenv('RUNTIME_ENVIRONMENT', 'not set')}")
+logger.info(f"HF Space ID: {os.getenv('HF_SPACE_ID', 'not set')}")
+
 if settings.is_hf_space:
     # For Hugging Face Spaces, mount routes at root level
     logger.info("Running in Hugging Face Space environment - mounting routes at root")
