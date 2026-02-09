@@ -2,29 +2,11 @@ import axios from 'axios';
 import { getToken, getRefreshToken, removeTokens } from '../utils/auth';
 
 // Create axios instance with base configuration
-// Initially assume the API prefix based on the backend URL
-let apiPrefix = '/api'; // Default for most deployments
-if (process.env.NEXT_PUBLIC_API_BASE_URL) {
-  // Only use no prefix for actual Hugging Face Spaces with Gradio integration
-  // If using custom domain or different setup, keep the /api prefix
-  const isActualHfSpaceWithGradio = process.env.NEXT_PUBLIC_API_BASE_URL.includes('hf.space') && 
-                                   process.env.NEXT_PUBLIC_API_BASE_URL.includes('.hf.space');
-  
-  // For your specific case, since backend shows "mounting routes under /api", 
-  // we should use the /api prefix regardless of domain
-  // Override the prefix detection to match your backend configuration
-  if (process.env.NEXT_PUBLIC_API_BASE_URL === 'https://tabindaseher-full-stack-todo-app.hf.space') {
-    apiPrefix = '/api'; // Force /api prefix to match your backend
-  } else if (isActualHfSpaceWithGradio) {
-    apiPrefix = ''; // No prefix for actual Hugging Face Gradio deployments
-  }
-}
-
-const baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}${apiPrefix}`;
+// Since your backend routes are mounted under /api, always append /api to the base URL
+const baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api`;
 
 console.log('🔧 API Configuration:');
 console.log('  - NEXT_PUBLIC_API_BASE_URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
-console.log('  - API Prefix:', apiPrefix);
 console.log('  - Final Base URL:', baseURL);
 
 const apiClient = axios.create({
@@ -71,20 +53,10 @@ apiClient.interceptors.response.use(
       const refreshToken = getRefreshToken();
       if (refreshToken) {
         try {
-          // Use the same API prefix logic as the main client
-          let refreshApiPrefix = '/api'; // Default for most deployments
-          if (process.env.NEXT_PUBLIC_API_BASE_URL) {
-            const isActualHfSpaceWithGradio = process.env.NEXT_PUBLIC_API_BASE_URL.includes('hf.space') && 
-                                             process.env.NEXT_PUBLIC_API_BASE_URL.includes('.hf.space');
-            
-            if (process.env.NEXT_PUBLIC_API_BASE_URL === 'https://tabindaseher-full-stack-todo-app.hf.space') {
-              refreshApiPrefix = '/api'; // Force /api prefix to match your backend
-            } else if (isActualHfSpaceWithGradio) {
-              refreshApiPrefix = ''; // No prefix for actual Hugging Face Gradio deployments
-            }
-          }
+          // Use the same base URL as the main client with /api prefix
+          const refreshBaseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api`;
           
-          const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}${refreshApiPrefix}/auth/refresh`, {
+          const response = await axios.post(`${refreshBaseURL}/auth/refresh`, {
             refresh_token: refreshToken
           });
 
