@@ -115,21 +115,53 @@ export const authApi = {
 
 // Export specific API functions for tasks
 export const tasksApi = {
-  getAll: (userId: string, params?: { status?: string; priority?: string; limit?: number; offset?: number }) =>
-    apiClient.get(`/${userId}/tasks`, { params }),
+  getAll: (userId: string, params?: { status?: string; priority?: string; limit?: number; offset?: number }) => {
+    console.log('🔍 tasksApi.getAll - Request details:');
+    console.log('  - userId:', userId);
+    console.log('  - params:', params);
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}/${userId}/tasks`);
+    return apiClient.get(`/${userId}/tasks`, { params });
+  },
 
-  getById: (userId: string, id: string) =>
-    apiClient.get(`/${userId}/tasks/${id}`),
+  getById: (userId: string, id: string) => {
+    console.log('🔍 tasksApi.getById - Request details:');
+    console.log('  - userId:', userId);
+    console.log('  - taskId:', id);
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}/${userId}/tasks/${id}`);
+    return apiClient.get(`/${userId}/tasks/${id}`);
+  },
 
-  create: (userId: string, data: { title: string; description?: string }) =>
-    apiClient.post(`/${userId}/tasks`, data),
+  create: (userId: string, data: { title: string; description?: string }) => {
+    console.log('🔍 tasksApi.create - Request details:');
+    console.log('  - userId:', userId);
+    console.log('  - data:', data);
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}/${userId}/tasks`);
+    return apiClient.post(`/${userId}/tasks`, data);
+  },
 
-  update: (userId: string, id: string, data: { title?: string; description?: string; completed?: boolean }) =>
-    apiClient.put(`/${userId}/tasks/${id}`, data),
+  update: (userId: string, id: string, data: { title?: string; description?: string; completed?: boolean }) => {
+    console.log('🔍 tasksApi.update - Request details:');
+    console.log('  - userId:', userId);
+    console.log('  - taskId:', id);
+    console.log('  - data:', data);
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}/${userId}/tasks/${id}`);
+    return apiClient.put(`/${userId}/tasks/${id}`, data);
+  },
 
-  delete: (userId: string, id: string) =>
-    apiClient.delete(`/${userId}/tasks/${id}`),
+  delete: (userId: string, id: string) => {
+    console.log('🔍 tasksApi.delete - Request details:');
+    console.log('  - userId:', userId);
+    console.log('  - taskId:', id);
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}/${userId}/tasks/${id}`);
+    return apiClient.delete(`/${userId}/tasks/${id}`);
+  },
 
-  toggleComplete: (userId: string, id: string, completed: boolean) =>
-    apiClient.patch(`/${userId}/tasks/${id}/complete`, { completed }),
+  toggleComplete: (userId: string, id: string, completed: boolean) => {
+    console.log('🔍 tasksApi.toggleComplete - Request details:');
+    console.log('  - userId:', userId);
+    console.log('  - taskId:', id);
+    console.log('  - completed:', completed);
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}/${userId}/tasks/${id}/complete`);
+    return apiClient.patch(`/${userId}/tasks/${id}/complete`, { completed });
+  },
 };

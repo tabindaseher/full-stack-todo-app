@@ -50,16 +50,14 @@ app.add_middleware(
 # --------------------
 # API Routes
 # --------------------
-import os
 
-# Check if we're running in Hugging Face Space environment
-is_hf_space = bool(os.getenv("HF_SPACE_ID")) or os.getenv("RUNTIME_ENVIRONMENT") == "huggingface" or "huggingface" in os.getenv("HOSTNAME", "").lower()
-
-if is_hf_space:
+if settings.is_hf_space:
     # For Hugging Face Spaces, mount routes at root level
+    logger.info("Running in Hugging Face Space environment - mounting routes at root")
     app.include_router(api_router)
 else:
     # For local development and other environments, use /api prefix
+    logger.info("Running in local/standard environment - mounting routes under /api")
     app.include_router(api_router, prefix="/api")
 
 # --------------------
@@ -69,6 +67,9 @@ else:
 async def startup_event():
     """Initialize database tables on startup"""
     try:
+        logger.info(f"Starting up - Database URL: {settings.DATABASE_URL}")
+        if hasattr(settings, 'is_hf_space'):
+            logger.info(f"HF Space environment: {settings.is_hf_space}")
         SQLModel.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")
     except Exception as e:

@@ -24,8 +24,11 @@ def list_tasks(
     """
     List all tasks for the authenticated user with optional filters
     """
+    logger.info(f"list_tasks called - path user_id: {user_id}, token user_id: {current_user}")
+    
     # Verify that the user_id in the path matches the user_id from the token
     if not user_id or not current_user or user_id != current_user:
+        logger.warning(f"Authorization failed - path user_id: {user_id}, token user_id: {current_user}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to access this user's tasks"
@@ -81,8 +84,11 @@ def create_task(
     """
     Create a new task for the authenticated user
     """
+    logger.info(f"create_task called - path user_id: {user_id}, token user_id: {current_user}, task_data: {task_data}")
+    
     # Verify that the user_id in the path matches the user_id from the token
     if not user_id or not current_user or user_id != current_user:
+        logger.warning(f"Authorization failed - path user_id: {user_id}, token user_id: {current_user}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to create tasks for this user"

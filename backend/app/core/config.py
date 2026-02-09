@@ -30,5 +30,11 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
 
+    @property
+    def is_hf_space(self) -> bool:
+        """Check if running in Hugging Face Space environment"""
+        import os
+        return bool(os.getenv("HF_SPACE_ID")) or os.getenv("RUNTIME_ENVIRONMENT") == "huggingface" or "huggingface" in os.getenv("HOSTNAME", "").lower()
+
 
 settings = Settings()
