@@ -2,9 +2,9 @@ import axios from 'axios';
 import { getToken, getRefreshToken, removeTokens } from '../utils/auth';
 
 // Create axios instance with base configuration
-// Your production backend is configured to mount routes under /api regardless of environment
-// So always append /api to the base URL for all requests
-const baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api`;
+// The backend automatically adds /api prefix in local development but not in Hugging Face Space
+// So we don't need to add /api here - the backend handles it
+const baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}`;
 
 console.log('🔧 API Configuration:');
 console.log('  - NEXT_PUBLIC_API_BASE_URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
@@ -54,10 +54,10 @@ apiClient.interceptors.response.use(
       const refreshToken = getRefreshToken();
       if (refreshToken) {
         try {
-          // Use the same base URL as the main client with /api prefix
-          const refreshBaseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api`;
-          
-          const response = await axios.post(`${refreshBaseURL}/auth/refresh`, {
+          // Use the same base URL as the main client - the backend handles /api prefix
+          const refreshBaseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}`;
+
+          const response = await axios.post(`${refreshBaseURL}/api/auth/refresh`, {
             refresh_token: refreshToken
           });
 
@@ -93,16 +93,16 @@ export default apiClient;
 // Export specific API functions for authentication
 export const authApi = {
   login: (email: string, password: string) =>
-    apiClient.post('/auth/login', { email, password }),
+    apiClient.post('/api/auth/login', { email, password }),
 
   register: (name: string, email: string, password: string) =>
-    apiClient.post('/auth/register', { name, email, password }),
+    apiClient.post('/api/auth/register', { name, email, password }),
 
   logout: () =>
-    apiClient.post('/auth/logout'),
+    apiClient.post('/api/auth/logout'),
 
   refreshToken: (refreshToken: string) =>
-    apiClient.post('/auth/refresh', { refreshToken }),
+    apiClient.post('/api/auth/refresh', { refreshToken }),
 };
 
 // Export specific API functions for tasks
@@ -111,24 +111,24 @@ export const tasksApi = {
     console.log('🔍 tasksApi.getAll - Request details:');
     console.log('  - userId:', userId);
     console.log('  - params:', params);
-    console.log('  - full URL:', `${apiClient.defaults.baseURL}/${userId}/tasks`);
-    return apiClient.get(`/${userId}/tasks`, { params });
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}/api/${userId}/tasks`);
+    return apiClient.get(`/api/${userId}/tasks`, { params });
   },
 
   getById: (userId: string, id: string) => {
     console.log('🔍 tasksApi.getById - Request details:');
     console.log('  - userId:', userId);
     console.log('  - taskId:', id);
-    console.log('  - full URL:', `${apiClient.defaults.baseURL}/${userId}/tasks/${id}`);
-    return apiClient.get(`/${userId}/tasks/${id}`);
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}/api/${userId}/tasks/${id}`);
+    return apiClient.get(`/api/${userId}/tasks/${id}`);
   },
 
   create: (userId: string, data: { title: string; description?: string }) => {
     console.log('🔍 tasksApi.create - Request details:');
     console.log('  - userId:', userId);
     console.log('  - data:', data);
-    console.log('  - full URL:', `${apiClient.defaults.baseURL}/${userId}/tasks`);
-    return apiClient.post(`/${userId}/tasks`, data);
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}/api/${userId}/tasks`);
+    return apiClient.post(`/api/${userId}/tasks`, data);
   },
 
   update: (userId: string, id: string, data: { title?: string; description?: string; completed?: boolean }) => {
@@ -136,16 +136,16 @@ export const tasksApi = {
     console.log('  - userId:', userId);
     console.log('  - taskId:', id);
     console.log('  - data:', data);
-    console.log('  - full URL:', `${apiClient.defaults.baseURL}/${userId}/tasks/${id}`);
-    return apiClient.put(`/${userId}/tasks/${id}`, data);
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}/api/${userId}/tasks/${id}`);
+    return apiClient.put(`/api/${userId}/tasks/${id}`, data);
   },
 
   delete: (userId: string, id: string) => {
     console.log('🔍 tasksApi.delete - Request details:');
     console.log('  - userId:', userId);
     console.log('  - taskId:', id);
-    console.log('  - full URL:', `${apiClient.defaults.baseURL}/${userId}/tasks/${id}`);
-    return apiClient.delete(`/${userId}/tasks/${id}`);
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}/api/${userId}/tasks/${id}`);
+    return apiClient.delete(`/api/${userId}/tasks/${id}`);
   },
 
   toggleComplete: (userId: string, id: string, completed: boolean) => {
@@ -153,7 +153,7 @@ export const tasksApi = {
     console.log('  - userId:', userId);
     console.log('  - taskId:', id);
     console.log('  - completed:', completed);
-    console.log('  - full URL:', `${apiClient.defaults.baseURL}/${userId}/tasks/${id}/complete`);
-    return apiClient.patch(`/${userId}/tasks/${id}/complete`, { completed });
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}/api/${userId}/tasks/${id}/complete`);
+    return apiClient.patch(`/api/${userId}/tasks/${id}/complete`, { completed });
   },
 };
