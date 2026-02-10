@@ -61,29 +61,47 @@ def is_hf_space_runtime():
     hostname = os.getenv("HOSTNAME", "")
     server_name = os.getenv("SERVER_NAME", "")
     
+    # Also check for common Hugging Face Space indicators
+    space_repo_id = os.getenv("SPACE_REPO_ID")
+    space_sdk = os.getenv("SPACE_SDK")
+    is_colab = os.getenv("COLAB_RELEASE_TAG")
+    is_kaggle = os.getenv("KAGGLE_KERNEL_RUN_TYPE")
+    
+    # Additional check: if the server name contains the user's space name pattern
+    # This handles cases where the hostname doesn't end with .hf.space but is still a HF space
+    server_url = os.getenv("SERVER_URL", "")
     is_hf = bool(hf_space_id) or runtime_env == "huggingface" or \
+            bool(space_repo_id) or bool(space_sdk) or \
             "huggingface" in hostname.lower() or \
             "huggingface" in server_name.lower() or \
+            "huggingface" in server_url.lower() or \
             hostname.endswith(".hf.space") or \
-            server_name.endswith(".hf.space")
-            
+            server_name.endswith(".hf.space") or \
+            server_url.endswith(".hf.space") or \
+            bool(is_colab) or bool(is_kaggle)
+
     return is_hf
 
 runtime_is_hf_space = is_hf_space_runtime()
+force_api_prefix = settings.force_api_prefix
 
 logger.info(f"Environment detection - is_hf_space: {runtime_is_hf_space}")
+logger.info(f"Force API prefix: {force_api_prefix}")
 logger.info(f"Host: {os.getenv('HOSTNAME', 'not set')}")
 logger.info(f"Server name: {os.getenv('SERVER_NAME', 'not set')}")
 logger.info(f"Runtime environment: {os.getenv('RUNTIME_ENVIRONMENT', 'not set')}")
 logger.info(f"HF Space ID: {os.getenv('HF_SPACE_ID', 'not set')}")
+logger.info(f"SPACE_REPO_ID: {os.getenv('SPACE_REPO_ID', 'not set')}")
+logger.info(f"SPACE_SDK: {os.getenv('SPACE_SDK', 'not set')}")
 
-if runtime_is_hf_space:
+if runtime_is_hf_space and not force_api_prefix:
     # For Hugging Face Spaces, mount routes at root level
     logger.info("Running in Hugging Face Space environment - mounting routes at root")
     app.include_router(api_router)
 else:
     # For local development and other environments, use /api prefix
-    logger.info("Running in local/standard environment - mounting routes under /api")
+    # Also use /api prefix if force_api_prefix is set to true
+    logger.info("Running in local/standard environment or forced API prefix - mounting routes under /api")
     app.include_router(api_router, prefix="/api")
 
 # --------------------

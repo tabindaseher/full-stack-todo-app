@@ -40,13 +40,27 @@ class Settings(BaseSettings):
         hostname = os.getenv("HOSTNAME", "")
         server_name = os.getenv("SERVER_NAME", "")
         
+        # Also check for common Hugging Face Space indicators
+        space_repo_id = os.getenv("SPACE_REPO_ID")
+        space_sdk = os.getenv("SPACE_SDK")
+        is_colab = os.getenv("COLAB_RELEASE_TAG")
+        is_kaggle = os.getenv("KAGGLE_KERNEL_RUN_TYPE")
+
         is_hf = bool(hf_space_id) or runtime_env == "huggingface" or \
+                bool(space_repo_id) or bool(space_sdk) or \
                 "huggingface" in hostname.lower() or \
                 "huggingface" in server_name.lower() or \
                 hostname.endswith(".hf.space") or \
-                server_name.endswith(".hf.space")
-                
+                server_name.endswith(".hf.space") or \
+                bool(is_colab) or bool(is_kaggle)
+
         return is_hf
+    
+    @property
+    def force_api_prefix(self) -> bool:
+        """Check if API prefix should be forced regardless of environment detection"""
+        import os
+        return os.getenv("FORCE_API_PREFIX", "").lower() == "true"
 
 
 settings = Settings()
