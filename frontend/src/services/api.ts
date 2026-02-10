@@ -2,13 +2,15 @@ import axios from 'axios';
 import { getToken, getRefreshToken, removeTokens } from '../utils/auth';
 
 // Create axios instance with base configuration
-// The backend automatically adds /api prefix in local development but not in Hugging Face Space
-// So we don't need to add /api here - the backend handles it
+// Determine if we're connecting to Hugging Face Space backend (which serves routes at root) 
+// or local/other backend (which serves routes under /api)
 const baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}`;
+const isHuggingFaceSpace = baseURL.includes('.hf.space');
 
 console.log('🔧 API Configuration:');
 console.log('  - NEXT_PUBLIC_API_BASE_URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
 console.log('  - Final Base URL:', baseURL);
+console.log('  - Is Hugging Face Space:', isHuggingFaceSpace);
 
 const apiClient = axios.create({
   baseURL: baseURL,
@@ -57,7 +59,8 @@ apiClient.interceptors.response.use(
           // Use the same base URL as the main client - the backend handles /api prefix
           const refreshBaseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}`;
 
-          const response = await axios.post(`${refreshBaseURL}/api/auth/refresh`, {
+          const refreshEndpoint = isHuggingFaceSpace ? '/auth/refresh' : '/api/auth/refresh';
+          const response = await axios.post(`${refreshBaseURL}${refreshEndpoint}`, {
             refresh_token: refreshToken
           });
 
@@ -91,44 +94,56 @@ apiClient.interceptors.response.use(
 export default apiClient;
 
 // Export specific API functions for authentication
+const getAuthEndpoint = (endpoint: string) => {
+  return isHuggingFaceSpace ? `/auth${endpoint}` : `/api/auth${endpoint}`;
+};
+
 export const authApi = {
   login: (email: string, password: string) =>
-    apiClient.post('/api/auth/login', { email, password }),
+    apiClient.post(getAuthEndpoint('/login'), { email, password }),
 
   register: (name: string, email: string, password: string) =>
-    apiClient.post('/api/auth/register', { name, email, password }),
+    apiClient.post(getAuthEndpoint('/register'), { name, email, password }),
 
   logout: () =>
-    apiClient.post('/api/auth/logout'),
+    apiClient.post(getAuthEndpoint('/logout')),
 
   refreshToken: (refreshToken: string) =>
-    apiClient.post('/api/auth/refresh', { refreshToken }),
+    apiClient.post(getAuthEndpoint('/refresh'), { refreshToken }),
 };
 
 // Export specific API functions for tasks
+const getTasksEndpoint = (userId: string, endpoint: string) => {
+  const path = `/${userId}/tasks${endpoint}`;
+  return isHuggingFaceSpace ? path : `/api${path}`;
+};
+
 export const tasksApi = {
   getAll: (userId: string, params?: { status?: string; priority?: string; limit?: number; offset?: number }) => {
     console.log('🔍 tasksApi.getAll - Request details:');
     console.log('  - userId:', userId);
     console.log('  - params:', params);
-    console.log('  - full URL:', `${apiClient.defaults.baseURL}/api/${userId}/tasks`);
-    return apiClient.get(`/api/${userId}/tasks`, { params });
+    const endpoint = getTasksEndpoint(userId, '');
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}${endpoint}`);
+    return apiClient.get(endpoint, { params });
   },
 
   getById: (userId: string, id: string) => {
     console.log('🔍 tasksApi.getById - Request details:');
     console.log('  - userId:', userId);
     console.log('  - taskId:', id);
-    console.log('  - full URL:', `${apiClient.defaults.baseURL}/api/${userId}/tasks/${id}`);
-    return apiClient.get(`/api/${userId}/tasks/${id}`);
+    const endpoint = getTasksEndpoint(userId, `/${id}`);
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}${endpoint}`);
+    return apiClient.get(endpoint);
   },
 
   create: (userId: string, data: { title: string; description?: string }) => {
     console.log('🔍 tasksApi.create - Request details:');
     console.log('  - userId:', userId);
     console.log('  - data:', data);
-    console.log('  - full URL:', `${apiClient.defaults.baseURL}/api/${userId}/tasks`);
-    return apiClient.post(`/api/${userId}/tasks`, data);
+    const endpoint = getTasksEndpoint(userId, '');
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}${endpoint}`);
+    return apiClient.post(endpoint, data);
   },
 
   update: (userId: string, id: string, data: { title?: string; description?: string; completed?: boolean }) => {
@@ -136,16 +151,18 @@ export const tasksApi = {
     console.log('  - userId:', userId);
     console.log('  - taskId:', id);
     console.log('  - data:', data);
-    console.log('  - full URL:', `${apiClient.defaults.baseURL}/api/${userId}/tasks/${id}`);
-    return apiClient.put(`/api/${userId}/tasks/${id}`, data);
+    const endpoint = getTasksEndpoint(userId, `/${id}`);
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}${endpoint}`);
+    return apiClient.put(endpoint, data);
   },
 
   delete: (userId: string, id: string) => {
     console.log('🔍 tasksApi.delete - Request details:');
     console.log('  - userId:', userId);
     console.log('  - taskId:', id);
-    console.log('  - full URL:', `${apiClient.defaults.baseURL}/api/${userId}/tasks/${id}`);
-    return apiClient.delete(`/api/${userId}/tasks/${id}`);
+    const endpoint = getTasksEndpoint(userId, `/${id}`);
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}${endpoint}`);
+    return apiClient.delete(endpoint);
   },
 
   toggleComplete: (userId: string, id: string, completed: boolean) => {
@@ -153,7 +170,8 @@ export const tasksApi = {
     console.log('  - userId:', userId);
     console.log('  - taskId:', id);
     console.log('  - completed:', completed);
-    console.log('  - full URL:', `${apiClient.defaults.baseURL}/api/${userId}/tasks/${id}/complete`);
-    return apiClient.patch(`/api/${userId}/tasks/${id}/complete`, { completed });
+    const endpoint = getTasksEndpoint(userId, `/${id}/complete`);
+    console.log('  - full URL:', `${apiClient.defaults.baseURL}${endpoint}`);
+    return apiClient.patch(endpoint, { completed });
   },
 };
