@@ -100,15 +100,25 @@ logger.info(f"HF Space ID: {os.getenv('HF_SPACE_ID', 'not set')}")
 logger.info(f"SPACE_REPO_ID: {os.getenv('SPACE_REPO_ID', 'not set')}")
 logger.info(f"SPACE_SDK: {os.getenv('SPACE_SDK', 'not set')}")
 
-if (runtime_is_hf_space and not force_api_prefix) or force_root_routes:
-    # For Hugging Face Spaces, mount routes at root level
-    # Or if force_root_routes is enabled
-    logger.info("Using root routes - either Hugging Face Space environment or forced root routes")
+# Determine route mounting based on environment detection and settings
+# Priority order: force_root_routes > (hf_space_detection AND NOT force_api_prefix) > default to /api prefix
+should_use_root_routes = force_root_routes or (runtime_is_hf_space and not force_api_prefix)
+should_use_api_prefix = not should_use_root_routes
+
+logger.info(f"Route configuration decision:")
+logger.info(f"  - runtime_is_hf_space: {runtime_is_hf_space}")
+logger.info(f"  - force_api_prefix: {force_api_prefix}")
+logger.info(f"  - force_root_routes: {force_root_routes}")
+logger.info(f"  - should_use_root_routes: {should_use_root_routes}")
+logger.info(f"  - should_use_api_prefix: {should_use_api_prefix}")
+
+if should_use_root_routes:
+    # Mount routes at root level for Hugging Face Spaces or when forced
+    logger.info("Using root routes - mounting API router at '/'")
     app.include_router(api_router)
 else:
-    # For local development and other environments, use /api prefix
-    # Also use /api prefix if force_api_prefix is set to true
-    logger.info("Using /api prefix routes")
+    # Use /api prefix for local development and other environments
+    logger.info("Using /api prefix routes - mounting API router at '/api'")
     app.include_router(api_router, prefix="/api")
 
 # --------------------
