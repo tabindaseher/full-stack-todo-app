@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { getToken, getRefreshToken, removeTokens } from '../utils/auth';
 
+// API Service - Version 2.0 - Fixed to always use /api prefix
 // Create axios instance with base configuration
 // Always use /api prefix for all environments (local and production)
 const baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}`;
