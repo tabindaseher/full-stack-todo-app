@@ -5,12 +5,16 @@ import { getToken, getRefreshToken, removeTokens } from '../utils/auth';
 // Determine if we're connecting to Hugging Face Space backend (which serves routes at root) 
 // or local/other backend (which serves routes under /api)
 const baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}`;
-const isHuggingFaceSpace = baseURL.includes('.hf.space');
+// Check if we should force the /api prefix regardless of URL
+const forceApiPrefix = process.env.NEXT_PUBLIC_FORCE_API_PREFIX === 'true';
+const isHuggingFaceSpace = baseURL.includes('.hf.space') && !forceApiPrefix;
 
 console.log('🔧 API Configuration:');
 console.log('  - NEXT_PUBLIC_API_BASE_URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
+console.log('  - NEXT_PUBLIC_FORCE_API_PREFIX:', process.env.NEXT_PUBLIC_FORCE_API_PREFIX);
 console.log('  - Final Base URL:', baseURL);
 console.log('  - Is Hugging Face Space:', isHuggingFaceSpace);
+console.log('  - Force API prefix:', forceApiPrefix);
 
 const apiClient = axios.create({
   baseURL: baseURL,
