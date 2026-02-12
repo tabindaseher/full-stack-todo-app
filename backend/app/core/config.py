@@ -39,19 +39,27 @@ class Settings(BaseSettings):
         runtime_env = os.getenv("RUNTIME_ENVIRONMENT")
         hostname = os.getenv("HOSTNAME", "")
         server_name = os.getenv("SERVER_NAME", "")
-        
+
         # Also check for common Hugging Face Space indicators
         space_repo_id = os.getenv("SPACE_REPO_ID")
         space_sdk = os.getenv("SPACE_SDK")
         is_colab = os.getenv("COLAB_RELEASE_TAG")
         is_kaggle = os.getenv("KAGGLE_KERNEL_RUN_TYPE")
+        
+        # Additional check: if the server name contains the user's space name pattern
+        # This handles cases where the hostname doesn't end with .hf.space but is still a HF space
+        server_url = os.getenv("SERVER_URL", "")
+        space_hostname = os.getenv("SPACE_HOSTNAME", "")  # Specific to Hugging Face Spaces
 
         is_hf = bool(hf_space_id) or runtime_env == "huggingface" or \
                 bool(space_repo_id) or bool(space_sdk) or \
                 "huggingface" in hostname.lower() or \
                 "huggingface" in server_name.lower() or \
+                "huggingface" in server_url.lower() or \
                 hostname.endswith(".hf.space") or \
                 server_name.endswith(".hf.space") or \
+                server_url.endswith(".hf.space") or \
+                space_hostname.endswith(".hf.space") or \
                 bool(is_colab) or bool(is_kaggle)
 
         return is_hf
