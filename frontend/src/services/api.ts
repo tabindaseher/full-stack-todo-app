@@ -1,15 +1,19 @@
 import axios from 'axios';
 import { getToken, getRefreshToken, removeTokens } from '../utils/auth';
 
-// API Service - Version 2.0 - Fixed to always use /api prefix
+// API Service - Dynamic environment handling
 // Create axios instance with base configuration
-// Always use /api prefix for all environments (local and production)
 const baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}`;
+
+// Determine if we're in production (Hugging Face Space) environment
+const isProduction = typeof window !== 'undefined' && 
+  (window.location.hostname.includes('.hf.space') || 
+   process.env.NEXT_PUBLIC_API_BASE_URL?.includes('.hf.space'));
 
 console.log('🔧 API Configuration:');
 console.log('  - NEXT_PUBLIC_API_BASE_URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
 console.log('  - Final Base URL:', baseURL);
-console.log('  - Using /api prefix for all routes');
+console.log('  - Is Production (HF Space):', isProduction);
 
 const apiClient = axios.create({
   baseURL: baseURL,
@@ -55,10 +59,17 @@ apiClient.interceptors.response.use(
       const refreshToken = getRefreshToken();
       if (refreshToken) {
         try {
-          // Use the same base URL as the main client - the backend handles /api prefix
+          // Use the same base URL as the main client - determine route based on environment
           const refreshBaseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}`;
+          
+          // Determine if we're in production (HF Space) environment for refresh endpoint
+          const isProd = typeof window !== 'undefined' && 
+            (window.location.hostname.includes('.hf.space') || 
+             process.env.NEXT_PUBLIC_API_BASE_URL?.includes('.hf.space'));
+             
+          const refreshEndpoint = isProd ? '/auth/refresh' : '/api/auth/refresh';
 
-          const response = await axios.post(`${refreshBaseURL}/api/auth/refresh`, {
+          const response = await axios.post(`${refreshBaseURL}${refreshEndpoint}`, {
             refresh_token: refreshToken
           });
 
@@ -93,22 +104,31 @@ export default apiClient;
 
 // Export specific API functions for authentication
 export const authApi = {
-  login: (email: string, password: string) =>
-    apiClient.post('/api/auth/login', { email, password }),
+  login: (email: string, password: string) => {
+    const endpoint = isProduction ? '/auth/login' : '/api/auth/login';
+    return apiClient.post(endpoint, { email, password });
+  },
 
-  register: (name: string, email: string, password: string) =>
-    apiClient.post('/api/auth/register', { name, email, password }),
+  register: (name: string, email: string, password: string) => {
+    const endpoint = isProduction ? '/auth/register' : '/api/auth/register';
+    return apiClient.post(endpoint, { name, email, password });
+  },
 
-  logout: () =>
-    apiClient.post('/api/auth/logout'),
+  logout: () => {
+    const endpoint = isProduction ? '/auth/logout' : '/api/auth/logout';
+    return apiClient.post(endpoint);
+  },
 
-  refreshToken: (refreshToken: string) =>
-    apiClient.post('/api/auth/refresh', { refreshToken }),
+  refreshToken: (refreshToken: string) => {
+    const endpoint = isProduction ? '/auth/refresh' : '/api/auth/refresh';
+    return apiClient.post(endpoint, { refreshToken });
+  },
 };
 
 // Export specific API functions for tasks
 const getTasksEndpoint = (userId: string, endpoint: string) => {
-  return `/api/${userId}/tasks${endpoint}`;
+  const prefix = isProduction ? '' : '/api';
+  return `${prefix}/${userId}/tasks${endpoint}`;
 };
 
 export const tasksApi = {
