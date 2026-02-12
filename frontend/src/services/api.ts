@@ -1,16 +1,15 @@
 import axios from 'axios';
 import { getToken, getRefreshToken, removeTokens } from '../utils/auth';
 
+// API Service - Version 2.0 - Fixed to always use /api prefix
 // Create axios instance with base configuration
-// Determine if we're connecting to Hugging Face Space backend (which serves routes at root) 
-// or local/other backend (which serves routes under /api)
+// Always use /api prefix for all environments (local and production)
 const baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}`;
-const isHuggingFaceSpace = baseURL.includes('.hf.space');
 
 console.log('🔧 API Configuration:');
 console.log('  - NEXT_PUBLIC_API_BASE_URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
 console.log('  - Final Base URL:', baseURL);
-console.log('  - Is Hugging Face Space:', isHuggingFaceSpace);
+console.log('  - Using /api prefix for all routes');
 
 const apiClient = axios.create({
   baseURL: baseURL,
@@ -59,8 +58,7 @@ apiClient.interceptors.response.use(
           // Use the same base URL as the main client - the backend handles /api prefix
           const refreshBaseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}`;
 
-          const refreshEndpoint = isHuggingFaceSpace ? '/auth/refresh' : '/api/auth/refresh';
-          const response = await axios.post(`${refreshBaseURL}${refreshEndpoint}`, {
+          const response = await axios.post(`${refreshBaseURL}/api/auth/refresh`, {
             refresh_token: refreshToken
           });
 
@@ -94,28 +92,23 @@ apiClient.interceptors.response.use(
 export default apiClient;
 
 // Export specific API functions for authentication
-const getAuthEndpoint = (endpoint: string) => {
-  return isHuggingFaceSpace ? `/auth${endpoint}` : `/api/auth${endpoint}`;
-};
-
 export const authApi = {
   login: (email: string, password: string) =>
-    apiClient.post(getAuthEndpoint('/login'), { email, password }),
+    apiClient.post('/api/auth/login', { email, password }),
 
   register: (name: string, email: string, password: string) =>
-    apiClient.post(getAuthEndpoint('/register'), { name, email, password }),
+    apiClient.post('/api/auth/register', { name, email, password }),
 
   logout: () =>
-    apiClient.post(getAuthEndpoint('/logout')),
+    apiClient.post('/api/auth/logout'),
 
   refreshToken: (refreshToken: string) =>
-    apiClient.post(getAuthEndpoint('/refresh'), { refreshToken }),
+    apiClient.post('/api/auth/refresh', { refreshToken }),
 };
 
 // Export specific API functions for tasks
 const getTasksEndpoint = (userId: string, endpoint: string) => {
-  const path = `/${userId}/tasks${endpoint}`;
-  return isHuggingFaceSpace ? path : `/api${path}`;
+  return `/api/${userId}/tasks${endpoint}`;
 };
 
 export const tasksApi = {
